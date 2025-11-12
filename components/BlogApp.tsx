@@ -177,17 +177,12 @@ const BlogApp: React.FC = () => {
     );
     if (!confirmDelete) return;
 
-    // Remove post
     setBlogPosts((prev) => prev.filter((post) => post.id !== id));
-
-    // Remove comments
     setComments((prev) => {
       const updated = { ...prev };
       delete updated[id];
       return updated;
     });
-
-    // Back to homepage
     setSelectedPost(null);
   };
 
@@ -327,7 +322,7 @@ const BlogApp: React.FC = () => {
 
   // --- Home Page ---
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
@@ -372,7 +367,7 @@ const BlogApp: React.FC = () => {
       )}
 
       {/* Blog Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {filteredPosts.slice(1).map((post) => (
           <article
             key={post.id}
@@ -396,6 +391,80 @@ const BlogApp: React.FC = () => {
           </article>
         ))}
       </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center mb-4">
+              <BookOpen className="h-6 w-6 text-indigo-400" />
+              <span className="ml-2 text-xl font-bold">TechBlog</span>
+            </div>
+            <p className="text-gray-400">
+              Your daily dose of tech insights and tutorials.
+            </p>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2 text-gray-400">
+              <li>
+                <a href="#" className="hover:text-white">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white">
+                  Articles
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white">
+                  About
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-4">Categories</h3>
+            <ul className="space-y-2 text-gray-400">
+              <li>
+                <a href="#" className="hover:text-white">
+                  Development
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white">
+                  Design
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white">
+                  Technology
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-semibold mb-4">Newsletter</h3>
+            <p className="text-gray-400 mb-4">
+              Subscribe for weekly updates and insights.
+            </p>
+            <div className="flex">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="flex-1 px-4 py-2 rounded-l-lg text-gray-900"
+              />
+              <button className="bg-indigo-600 px-4 py-2 rounded-r-lg hover:bg-indigo-700">
+                <Mail className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <p>© 2025 TechBlog. All rights reserved.</p>
+        </div>
+      </footer>
 
       {/* Add Blog Modal */}
       {isAddModalOpen && (
