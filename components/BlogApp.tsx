@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+
+import React, { useState, useCallback } from "react";
 import {
   Search,
   Menu,
@@ -61,7 +62,8 @@ const BlogApp: React.FC = () => {
       image:
         "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=1200&h=700&fit=crop",
       readTime: "5 min read",
-      content: `TypeScript has revolutionized the way we write JavaScript applications...`,
+      content:
+        "TypeScript has revolutionized the way we write JavaScript applications...",
     },
     {
       id: 2,
@@ -74,7 +76,8 @@ const BlogApp: React.FC = () => {
       image:
         "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&h=700&fit=crop",
       readTime: "7 min read",
-      content: `Web design continues to evolve at a rapid pace...`,
+      content:
+        "The future of web design is rapidly evolving, blending technology, creativity, and user-centered innovation to create more engaging online experiences. In 2025 and beyond, web design trends focus on personalization, interactivity, and accessibility. Artificial intelligence (AI) plays a major role, enabling smart layouts, automated content generation, and adaptive user interfaces that respond to individual preferences. Micro-interactions, subtle animations, and 3D visuals are transforming static pages into immersive experiences that capture attention and guide users smoothly. Designers are also embracing bold color contrasts, minimalistic aesthetics, and experimental navigation, balancing creativity with usability. As mobile usage continues to dominate, responsive and mobile-first design remains a top priority, ensuring seamless performance across all devices. Furthermore, sustainability and inclusivity are gaining importance, encouraging lightweight websites optimized for speed and accessibility. The integration of AI tools, motion design, and component-based systems like React is streamlining development while maintaining consistency and efficiency. Ultimately, the future of web design lies in crafting digital environments that are fast, intuitive, visually striking, and deeply human.",
     },
     {
       id: 3,
@@ -87,7 +90,8 @@ const BlogApp: React.FC = () => {
       image:
         "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=700&fit=crop",
       readTime: "10 min read",
-      content: `Building applications that scale requires thoughtful architecture...`,
+      content:
+        "Building applications that scale requires thoughtful architecture...",
     },
   ]);
 
@@ -115,7 +119,7 @@ const BlogApp: React.FC = () => {
   const featuredPost = blogPosts[0];
 
   // --- Add Blog ---
-  const handleAddBlog = () => {
+  const handleAddBlog = useCallback(() => {
     if (
       !newBlog.title ||
       !newBlog.excerpt ||
@@ -141,41 +145,41 @@ const BlogApp: React.FC = () => {
       content: newBlog.content!,
     };
 
-    setBlogPosts([newPost, ...blogPosts]);
+    setBlogPosts((prev) => [newPost, ...prev]);
     setComments((prev) => ({ ...prev, [newPost.id]: [] }));
     setIsAddModalOpen(false);
     setNewBlog({});
-  };
+  }, [newBlog, blogPosts]);
 
   // --- Add Comment ---
-  const handleAddComment = (postId: number) => {
-    if (!commentInput.trim()) return;
+  const handleAddComment = useCallback(
+    (postId: number) => {
+      if (!commentInput.trim()) return;
 
-    const newComment: Comment = {
-      id:
-        Object.values(comments)
-          .flat()
-          .reduce((m, c) => Math.max(m, c.id), 0) + 1,
-      postId,
-      author: "Anonymous",
-      body: commentInput.trim(),
-      date: new Date().toLocaleDateString(),
-    };
+      const newComment: Comment = {
+        id:
+          Object.values(comments)
+            .flat()
+            .reduce((m, c) => Math.max(m, c.id), 0) + 1,
+        postId,
+        author: "Anonymous",
+        body: commentInput.trim(),
+        date: new Date().toLocaleDateString(),
+      };
 
-    setComments((prev) => {
-      const existing = prev[postId] ?? [];
-      return { ...prev, [postId]: [newComment, ...existing] };
-    });
+      setComments((prev) => {
+        const existing = prev[postId] ?? [];
+        return { ...prev, [postId]: [newComment, ...existing] };
+      });
 
-    setCommentInput("");
-  };
+      setCommentInput("");
+    },
+    [commentInput, comments]
+  );
 
   // --- Delete Blog ---
-  const handleDeleteBlog = (id: number) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this blog?"
-    );
-    if (!confirmDelete) return;
+  const handleDeleteBlog = useCallback((id: number) => {
+    if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     setBlogPosts((prev) => prev.filter((post) => post.id !== id));
     setComments((prev) => {
@@ -184,7 +188,7 @@ const BlogApp: React.FC = () => {
       return updated;
     });
     setSelectedPost(null);
-  };
+  }, []);
 
   // --- Single Post View ---
   if (selectedPost) {
@@ -234,7 +238,6 @@ const BlogApp: React.FC = () => {
             </div>
           </div>
 
-          {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
               <ThumbsUp className="h-4 w-4" /> Like
