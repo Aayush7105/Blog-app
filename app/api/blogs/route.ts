@@ -2,22 +2,37 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import Blog from "@/models/Blog";
 
-// --- Get all blogs ---
+// --- GET all blogs ---
 export async function GET() {
-  await connectToDatabase();
-  const blogs = await Blog.find().sort({ _id: -1 });
-  return NextResponse.json(blogs);
+  try {
+    await connectToDatabase();
+    const posts = await Blog.find().sort({ date: -1 });
+    return NextResponse.json({ success: true, posts });
+  } catch (error) {
+    console.error("Error fetching blogs:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown server error";
+    return NextResponse.json(
+      { success: false, error: message },
+      { status: 500 }
+    );
+  }
 }
 
-// --- Add a new blog ---
-export async function POST(req: Request) {
-  await connectToDatabase();
-  const body = await req.json();
-
-  const newBlog = await Blog.create({
-    ...body,
-    date: new Date().toLocaleDateString(),
-  });
-
-  return NextResponse.json(newBlog);
+// --- POST new blog ---
+export async function POST(request: Request) {
+  try {
+    await connectToDatabase();
+    const body = await request.json();
+    const newPost = await Blog.create(body);
+    return NextResponse.json({ success: true, post: newPost });
+  } catch (error) {
+    console.error("Error adding blog:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown server error";
+    return NextResponse.json(
+      { success: false, error: message },
+      { status: 500 }
+    );
+  }
 }

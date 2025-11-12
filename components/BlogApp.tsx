@@ -119,7 +119,7 @@ const BlogApp: React.FC = () => {
   const featuredPost = blogPosts[0];
 
   // --- Add Blog ---
-  const handleAddBlog = useCallback(() => {
+  const handleAddBlog = useCallback(async () => {
     if (
       !newBlog.title ||
       !newBlog.excerpt ||
@@ -131,25 +131,36 @@ const BlogApp: React.FC = () => {
       return;
     }
 
-    const newPost: BlogPost = {
-      id: blogPosts.length + 1,
-      title: newBlog.title!,
-      excerpt: newBlog.excerpt!,
-      author: newBlog.author!,
-      category: newBlog.category!,
-      date: new Date().toLocaleDateString(),
+    const blogData = {
+      ...newBlog,
       image:
         newBlog.image ||
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=700&fit=crop",
       readTime: newBlog.readTime || "5 min read",
-      content: newBlog.content!,
+      date: new Date().toLocaleDateString(),
     };
 
-    setBlogPosts((prev) => [newPost, ...prev]);
-    setComments((prev) => ({ ...prev, [newPost.id]: [] }));
-    setIsAddModalOpen(false);
-    setNewBlog({});
-  }, [newBlog, blogPosts]);
+    try {
+      const res = await fetch("/api/blogs", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(blogData),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        setBlogPosts((prev) => [data.post, ...prev]); // add to UI
+        setIsAddModalOpen(false);
+        setNewBlog({});
+      } else {
+        alert(`Failed to add blog: ${data.error}`);
+      }
+    } catch (error) {
+      console.error("Error adding blog:", error);
+      alert("An error occurred while adding your blog.");
+    }
+  }, [newBlog]);
 
   // --- Add Comment ---
   const handleAddComment = useCallback(
