@@ -9,17 +9,12 @@ export async function GET() {
     return Response.json({
       success: true,
       status: states[state],
-      message: `Database is currently ${states[state]}`,
     });
   } catch (error) {
-    console.error("❌ DB Connection Error:", error);
-    return Response.json(
-      {
-        success: false,
-        message: "Failed to connect to MongoDB",
-        error: String(error),
-      },
-      { status: 500 }
-    );
+    return Response.json({
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Unknown connection error",
+    });
   }
 }
