@@ -1,24 +1,23 @@
+import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import BlogPost from "@/models/Blog";
+import Blog from "@/models/Blog";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await context.params; // ✅ await params (new Next.js behavior)
+
   try {
     await connectToDatabase();
-    await BlogPost.findByIdAndDelete(params.id);
-    return Response.json({ success: true });
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error("DELETE /api/blogs error:", error);
-      return Response.json(
-        { success: false, error: error.message },
-        { status: 500 }
-      );
-    }
-    return Response.json(
-      { success: false, error: "Unknown server error" },
+    await Blog.findByIdAndDelete(id);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting blog:", error);
+    const message =
+      error instanceof Error ? error.message : "Unknown error deleting";
+    return NextResponse.json(
+      { success: false, error: message },
       { status: 500 }
     );
   }
