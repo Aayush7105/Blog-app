@@ -130,14 +130,14 @@ const BlogApp: React.FC = () => {
   // --- Single Post View ---
   if (selectedPost) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-neutral-50">
         {/* Navbar */}
         <nav className="bg-white shadow-sm sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center">
                 <BookOpen className="h-8 w-8 text-indigo-600" />
-                <span className="ml-2 text-2xl font-bold text-gray-900">
+                <span className="ml-2 text-2xl font-bold text-neutral-900">
                   TechBlog
                 </span>
               </div>
@@ -154,11 +154,11 @@ const BlogApp: React.FC = () => {
             <ArrowLeft className="h-5 w-5 mr-2" /> Back to Articles
           </button>
 
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-neutral-900 mb-4">
             {selectedPost.title}
           </h1>
 
-          <div className="flex items-center gap-4 text-gray-600 mb-6">
+          <div className="flex items-center gap-4 text-neutral-600 mb-6">
             <div className="flex items-center">
               <User className="h-5 w-5 mr-2" />
               <span>{selectedPost.author}</span>
@@ -188,7 +188,7 @@ const BlogApp: React.FC = () => {
           </div>
 
           <div className="prose prose-lg max-w-none mb-8">
-            <p className="text-gray-800 leading-relaxed">
+            <p className="text-neutral-800 leading-relaxed">
               {selectedPost.content}
             </p>
           </div>
@@ -201,13 +201,13 @@ const BlogApp: React.FC = () => {
 
   // --- Home Page ---
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-neutral-50 flex flex-col">
       {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
           <div className="flex items-center">
             <BookOpen className="h-8 w-8 text-indigo-600" />
-            <span className="ml-2 text-2xl font-bold text-gray-900">
+            <span className="ml-2 text-2xl font-bold text-neutral-900">
               TechBlog
             </span>
           </div>
@@ -247,9 +247,9 @@ const BlogApp: React.FC = () => {
       {/* Blog Grid */}
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
         {loading ? (
-          <p className="text-gray-800">Loading blogs...</p>
+          <p className="text-neutral-800">Loading blogs...</p>
         ) : filteredPosts.length === 0 ? (
-          <p className="text-gray-800">No blogs yet — add one!</p>
+          <p className="text-neutral-800">No blogs yet — add one!</p>
         ) : (
           filteredPosts.map((post) => (
             <article
@@ -260,11 +260,11 @@ const BlogApp: React.FC = () => {
               <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-sm rounded-full mb-3">
                 {post.category}
               </span>
-              <h2 className="text-xl font-bold text-gray-900 mb-2 hover:text-indigo-600">
+              <h2 className="text-xl font-bold text-neutral-900 mb-2 hover:text-indigo-600">
                 {post.title}
               </h2>
-              <p className="text-gray-600 mb-4">{post.excerpt}</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
+              <p className="text-neutral-600 mb-4">{post.excerpt}</p>
+              <div className="flex items-center justify-between text-sm text-neutral-500">
                 <div className="flex items-center">
                   <User className="h-4 w-4 mr-1" />
                   <span>{post.author}</span>
@@ -280,15 +280,15 @@ const BlogApp: React.FC = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-lg shadow-xl">
-            <h2 className="text-2xl font-bold mb-5 text-gray-900">
+            <h2 className="text-2xl font-bold mb-5 text-neutral-900">
               Add New Blog
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-black">
               <input
                 type="text"
                 placeholder="Title"
-                className="w-full border border-gray-300 p-3 rounded-lg"
+                className="w-full border border-neutral-300 p-3 rounded-lg"
                 value={newBlog.title || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, title: e.target.value })
@@ -298,7 +298,7 @@ const BlogApp: React.FC = () => {
               <input
                 type="text"
                 placeholder="Excerpt"
-                className="w-full border border-gray-300 p-3 rounded-lg"
+                className="w-full border border-neutral-300 p-3 rounded-lg"
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, excerpt: e.target.value })
@@ -308,7 +308,7 @@ const BlogApp: React.FC = () => {
               <input
                 type="text"
                 placeholder="Author"
-                className="w-full border border-gray-300 p-3 rounded-lg"
+                className="w-full border border-neutral-300 p-3 rounded-lg"
                 value={newBlog.author || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, author: e.target.value })
@@ -316,7 +316,7 @@ const BlogApp: React.FC = () => {
               />
 
               <select
-                className="w-full border border-gray-300 p-3 rounded-lg"
+                className="w-full border border-neutral-300 p-3 rounded-lg text"
                 value={newBlog.category || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, category: e.target.value })
@@ -332,7 +332,7 @@ const BlogApp: React.FC = () => {
 
               <textarea
                 placeholder="Content"
-                className="w-full border border-gray-300 p-3 rounded-lg"
+                className="w-full border border-neutral-300 p-3 rounded-lg"
                 rows={5}
                 value={newBlog.content || ""}
                 onChange={(e) =>
@@ -343,7 +343,7 @@ const BlogApp: React.FC = () => {
 
             <div className="flex justify-end gap-3 mt-6">
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg"
+                className="px-4 py-2 bg-neutral-200 text-neutral-900 rounded-lg"
                 onClick={() => setIsAddModalOpen(false)}
               >
                 Cancel
