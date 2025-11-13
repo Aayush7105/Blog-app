@@ -9,6 +9,7 @@ import {
   Calendar,
   ThumbsUp,
   Plus,
+  Mail,
 } from "lucide-react";
 
 // --- Interfaces ---
@@ -219,6 +220,7 @@ const BlogApp: React.FC = () => {
           </button>
         </div>
       </nav>
+
       {/* Featured Post */}
       {featuredPost && (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
@@ -316,7 +318,7 @@ const BlogApp: React.FC = () => {
               />
 
               <select
-                className="w-full border border-neutral-300 p-3 rounded-lg text"
+                className="w-full border border-neutral-300 p-3 rounded-lg"
                 value={newBlog.category || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, category: e.target.value })
@@ -359,6 +361,84 @@ const BlogApp: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="bg-neutral-900 text-white mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
+          <div>
+            <div className="flex items-center mb-4">
+              <BookOpen className="h-6 w-6 text-indigo-400" />
+              <span className="ml-2 text-xl font-bold">TechBlog</span>
+            </div>
+            <p className="text-neutral-400">
+              Your daily dose of tech insights and tutorials.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-4">Quick Links</h3>
+            <ul className="space-y-2 text-neutral-400">
+              <li>
+                <a className="hover:text-white" href="#">
+                  Home
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-white" href="#">
+                  Articles
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-white" href="#">
+                  About
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-4">Categories</h3>
+            <ul className="space-y-2 text-neutral-400">
+              <li>
+                <a className="hover:text-white" href="#">
+                  Development
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-white" href="#">
+                  Design
+                </a>
+              </li>
+              <li>
+                <a className="hover:text-white" href="#">
+                  Technology
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-4">Newsletter</h3>
+            <p className="text-neutral-400 mb-4">
+              Subscribe for weekly updates and insights.
+            </p>
+            <div className="flex">
+              <input
+                type="email"
+                placeholder="Your email"
+                className="flex-1 px-4 py-2 rounded-l-lg text-neutral-900"
+              />
+              <button className="bg-indigo-600 px-4 py-2 rounded-r-lg hover:bg-indigo-700">
+                <Mail className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-neutral-800 mt-8 pt-8 text-center text-neutral-400">
+          <p>© 2025 TechBlog. All rights reserved.</p>
+        </div>
+      </footer>
     </div>
   );
 };
