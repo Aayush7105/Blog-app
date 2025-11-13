@@ -4,14 +4,10 @@ import React, { useState, useEffect, useCallback } from "react";
 import {
   BookOpen,
   User,
-  Mail,
   ArrowLeft,
   Clock,
   Calendar,
-  Share2,
-  Bookmark,
   ThumbsUp,
-  MessageCircle,
   Plus,
 } from "lucide-react";
 
@@ -30,13 +26,12 @@ interface BlogPost {
 
 // --- Main Component ---
 const BlogApp: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [selectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({});
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [commentInput, setCommentInput] = useState<string>("");
 
   // --- Fetch Blogs From Database ---
   useEffect(() => {
