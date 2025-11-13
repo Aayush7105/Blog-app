@@ -1,11 +1,7 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
-  Search,
-  Menu,
-  X,
-  Home,
   BookOpen,
   User,
   Mail,
@@ -21,7 +17,7 @@ import {
 
 // --- Interfaces ---
 interface BlogPost {
-  id: number;
+  _id: string;
   title: string;
   excerpt: string;
   author: string;
@@ -32,85 +28,39 @@ interface BlogPost {
   content: string;
 }
 
-interface Comment {
-  id: number;
-  postId: number;
-  author: string;
-  body: string;
-  date: string;
-}
-
 // --- Main Component ---
 const BlogApp: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({});
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [commentInput, setCommentInput] = useState<string>("");
 
-  // Posts
-  const [blogPosts, setBlogPosts] = useState<BlogPost[]>([
-    {
-      id: 1,
-      title: "Getting Started with TypeScript in 2025",
-      excerpt:
-        "Learn the fundamentals of TypeScript and why it's become essential for modern web development.",
-      author: "Sarah Johnson",
-      date: "Nov 10, 2025",
-      category: "Development",
-      image:
-        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=1200&h=700&fit=crop",
-      readTime: "5 min read",
-      content:
-        "TypeScript has revolutionized the way we write JavaScript applications...",
-    },
-    {
-      id: 2,
-      title: "The Future of Web Design Trends",
-      excerpt:
-        "Explore the latest design trends shaping the web in 2025, from minimalism to immersive experiences.",
-      author: "Michael Chen",
-      date: "Nov 8, 2025",
-      category: "Design",
-      image:
-        "https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=1200&h=700&fit=crop",
-      readTime: "7 min read",
-      content:
-        "The future of web design is rapidly evolving, blending technology, creativity, and user-centered innovation to create more engaging online experiences. In 2025 and beyond, web design trends focus on personalization, interactivity, and accessibility. Artificial intelligence (AI) plays a major role, enabling smart layouts, automated content generation, and adaptive user interfaces that respond to individual preferences. Micro-interactions, subtle animations, and 3D visuals are transforming static pages into immersive experiences that capture attention and guide users smoothly. Designers are also embracing bold color contrasts, minimalistic aesthetics, and experimental navigation, balancing creativity with usability. As mobile usage continues to dominate, responsive and mobile-first design remains a top priority, ensuring seamless performance across all devices. Furthermore, sustainability and inclusivity are gaining importance, encouraging lightweight websites optimized for speed and accessibility. The integration of AI tools, motion design, and component-based systems like React is streamlining development while maintaining consistency and efficiency. Ultimately, the future of web design lies in crafting digital environments that are fast, intuitive, visually striking, and deeply human.",
-    },
-    {
-      id: 3,
-      title: "Building Scalable Applications with React",
-      excerpt:
-        "Best practices and architectural patterns for creating maintainable React applications at scale.",
-      author: "Emily Rodriguez",
-      date: "Nov 5, 2025",
-      category: "Development",
-      image:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&h=700&fit=crop",
-      readTime: "10 min read",
-      content:
-        "Building applications that scale requires thoughtful architecture...",
-    },
-  ]);
+  // --- Fetch Blogs From Database ---
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/blogs");
+        const data = await res.json();
 
-  // Comments keyed by postId
-  const [comments, setComments] = useState<Record<number, Comment[]>>({
-    1: [
-      {
-        id: 1,
-        postId: 1,
-        author: "Aman",
-        body: "Great intro — helped me set up TS quickly!",
-        date: "Nov 11, 2025",
-      },
-    ],
-    2: [],
-    3: [],
-  });
+        if (data.success) {
+          setBlogPosts(data.posts);
+        }
+      } catch (err) {
+        console.error("Error loading blogs:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, []);
 
   const categories: string[] = ["All", "Development", "Design", "Technology"];
+
   const filteredPosts =
     selectedCategory === "All"
       ? blogPosts
@@ -150,7 +100,7 @@ const BlogApp: React.FC = () => {
       const data = await res.json();
 
       if (data.success) {
-        setBlogPosts((prev) => [data.post, ...prev]); // add to UI
+        setBlogPosts((prev) => [data.post, ...prev]);
         setIsAddModalOpen(false);
         setNewBlog({});
       } else {
@@ -162,49 +112,28 @@ const BlogApp: React.FC = () => {
     }
   }, [newBlog]);
 
-  // --- Add Comment ---
-  const handleAddComment = useCallback(
-    (postId: number) => {
-      if (!commentInput.trim()) return;
-
-      const newComment: Comment = {
-        id:
-          Object.values(comments)
-            .flat()
-            .reduce((m, c) => Math.max(m, c.id), 0) + 1,
-        postId,
-        author: "Anonymous",
-        body: commentInput.trim(),
-        date: new Date().toLocaleDateString(),
-      };
-
-      setComments((prev) => {
-        const existing = prev[postId] ?? [];
-        return { ...prev, [postId]: [newComment, ...existing] };
-      });
-
-      setCommentInput("");
-    },
-    [commentInput, comments]
-  );
-
   // --- Delete Blog ---
-  const handleDeleteBlog = useCallback((id: number) => {
+  const handleDeleteBlog = useCallback(async (id?: string) => {
+    if (!id) return;
+
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
-    setBlogPosts((prev) => prev.filter((post) => post.id !== id));
-    setComments((prev) => {
-      const updated = { ...prev };
-      delete updated[id];
-      return updated;
-    });
-    setSelectedPost(null);
+    try {
+      const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+      const data = await res.json();
+
+      if (data.success) {
+        setBlogPosts((prev) => prev.filter((p) => p._id !== id));
+        setSelectedPost(null);
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      alert("Failed to delete blog.");
+    }
   }, []);
 
   // --- Single Post View ---
   if (selectedPost) {
-    const postComments = comments[selectedPost.id] ?? [];
-
     return (
       <div className="min-h-screen bg-gray-50">
         {/* Navbar */}
@@ -249,18 +178,14 @@ const BlogApp: React.FC = () => {
             </div>
           </div>
 
+          {/* Actions */}
           <div className="flex flex-wrap items-center gap-3 mb-6">
             <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
               <ThumbsUp className="h-4 w-4" /> Like
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-              <Bookmark className="h-4 w-4" /> Save
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">
-              <Share2 className="h-4 w-4" /> Share
-            </button>
+
             <button
-              onClick={() => handleDeleteBlog(selectedPost.id)}
+              onClick={() => handleDeleteBlog(selectedPost._id)}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition ml-auto"
             >
               Delete
@@ -273,62 +198,7 @@ const BlogApp: React.FC = () => {
             </p>
           </div>
 
-          {/* Comments */}
-          <div className="mt-12 border-t pt-8">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-              <MessageCircle className="h-6 w-6 mr-2" /> Comments
-            </h3>
-
-            <div className="bg-white rounded-lg p-6 shadow-sm mb-6">
-              <textarea
-                placeholder="Share your thoughts..."
-                className="w-full p-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
-                rows={3}
-                value={commentInput}
-                onChange={(e) => setCommentInput(e.target.value)}
-              />
-              <div className="flex justify-end gap-3 mt-4">
-                <button
-                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
-                  onClick={() => setCommentInput("")}
-                >
-                  Cancel
-                </button>
-                <button
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                  onClick={() => handleAddComment(selectedPost.id)}
-                >
-                  Post Comment
-                </button>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {postComments.length === 0 ? (
-                <p className="text-gray-600">No comments yet — be the first!</p>
-              ) : (
-                postComments.map((c) => (
-                  <div
-                    key={c.id}
-                    className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold">
-                        {c.author.charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">
-                          {c.author}
-                        </div>
-                        <div className="text-sm text-gray-500">{c.date}</div>
-                      </div>
-                    </div>
-                    <p className="text-gray-800">{c.body}</p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          {/* Comments (Coming Later) */}
         </article>
       </div>
     );
@@ -354,11 +224,10 @@ const BlogApp: React.FC = () => {
           </button>
         </div>
       </nav>
-
       {/* Featured Post */}
       {featuredPost && (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="max-w-3xl">
               <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm mb-4">
                 Featured Post
@@ -382,103 +251,35 @@ const BlogApp: React.FC = () => {
 
       {/* Blog Grid */}
       <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredPosts.slice(1).map((post) => (
-          <article
-            key={post.id}
-            onClick={() => setSelectedPost(post)}
-            className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer p-6"
-          >
-            <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-sm rounded-full mb-3">
-              {post.category}
-            </span>
-            <h2 className="text-xl font-bold text-gray-900 mb-2 hover:text-indigo-600">
-              {post.title}
-            </h2>
-            <p className="text-gray-600 mb-4">{post.excerpt}</p>
-            <div className="flex items-center justify-between text-sm text-gray-500">
-              <div className="flex items-center">
-                <User className="h-4 w-4 mr-1" />
-                <span>{post.author}</span>
+        {loading ? (
+          <p className="text-gray-800">Loading blogs...</p>
+        ) : filteredPosts.length === 0 ? (
+          <p className="text-gray-800">No blogs yet — add one!</p>
+        ) : (
+          filteredPosts.map((post) => (
+            <article
+              key={post._id}
+              onClick={() => setSelectedPost(post)}
+              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer p-6"
+            >
+              <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-sm rounded-full mb-3">
+                {post.category}
+              </span>
+              <h2 className="text-xl font-bold text-gray-900 mb-2 hover:text-indigo-600">
+                {post.title}
+              </h2>
+              <p className="text-gray-600 mb-4">{post.excerpt}</p>
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-1" />
+                  <span>{post.author}</span>
+                </div>
+                <span>{post.readTime}</span>
               </div>
-              <span>{post.readTime}</span>
-            </div>
-          </article>
-        ))}
+            </article>
+          ))
+        )}
       </div>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center mb-4">
-              <BookOpen className="h-6 w-6 text-indigo-400" />
-              <span className="ml-2 text-xl font-bold">TechBlog</span>
-            </div>
-            <p className="text-gray-400">
-              Your daily dose of tech insights and tutorials.
-            </p>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Articles
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  About
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2 text-gray-400">
-              <li>
-                <a href="#" className="hover:text-white">
-                  Development
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Design
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white">
-                  Technology
-                </a>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h3 className="font-semibold mb-4">Newsletter</h3>
-            <p className="text-gray-400 mb-4">
-              Subscribe for weekly updates and insights.
-            </p>
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-4 py-2 rounded-l-lg text-gray-900"
-              />
-              <button className="bg-indigo-600 px-4 py-2 rounded-r-lg hover:bg-indigo-700">
-                <Mail className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>© 2025 TechBlog. All rights reserved.</p>
-        </div>
-      </footer>
 
       {/* Add Blog Modal */}
       {isAddModalOpen && (
@@ -487,36 +288,40 @@ const BlogApp: React.FC = () => {
             <h2 className="text-2xl font-bold mb-5 text-gray-900">
               Add New Blog
             </h2>
+
             <div className="space-y-4">
               <input
                 type="text"
                 placeholder="Title"
-                className="w-full border border-gray-300 p-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 p-3 rounded-lg"
                 value={newBlog.title || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, title: e.target.value })
                 }
               />
+
               <input
                 type="text"
                 placeholder="Excerpt"
-                className="w-full border border-gray-300 p-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 p-3 rounded-lg"
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, excerpt: e.target.value })
                 }
               />
+
               <input
                 type="text"
                 placeholder="Author"
-                className="w-full border border-gray-300 p-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 p-3 rounded-lg"
                 value={newBlog.author || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, author: e.target.value })
                 }
               />
+
               <select
-                className="w-full border border-gray-300 p-3 rounded-lg text-gray-900 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 p-3 rounded-lg"
                 value={newBlog.category || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, category: e.target.value })
@@ -524,16 +329,15 @@ const BlogApp: React.FC = () => {
               >
                 <option value="">Select Category</option>
                 {categories
-                  .filter((cat) => cat !== "All")
-                  .map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
+                  .filter((c) => c !== "All")
+                  .map((c) => (
+                    <option key={c}>{c}</option>
                   ))}
               </select>
+
               <textarea
                 placeholder="Content"
-                className="w-full border border-gray-300 p-3 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-indigo-500"
+                className="w-full border border-gray-300 p-3 rounded-lg"
                 rows={5}
                 value={newBlog.content || ""}
                 onChange={(e) =>
@@ -541,15 +345,17 @@ const BlogApp: React.FC = () => {
                 }
               />
             </div>
+
             <div className="flex justify-end gap-3 mt-6">
               <button
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+                className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg"
                 onClick={() => setIsAddModalOpen(false)}
               >
                 Cancel
               </button>
+
               <button
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
                 onClick={handleAddBlog}
               >
                 Add Blog
