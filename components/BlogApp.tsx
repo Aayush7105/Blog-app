@@ -422,15 +422,11 @@ const BlogApp: React.FC = () => {
             <p className="text-neutral-400 mb-4">
               Subscribe for weekly updates and insights.
             </p>
-            <div className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-4 py-2 rounded-l-lg text-neutral-900"
-              />
-              <button className="bg-indigo-600 px-4 py-2 rounded-r-lg hover:bg-indigo-700">
-                <Mail className="h-5 w-5" />
-              </button>
+            <div className="flex items-center gap-2 rounded-lg cursor-pointer">
+              <Mail className="h-4 w-4" />
+              <p className="m-0 p-0 leading-none text-sm">
+                aayushrawat5107@gmail.com
+              </p>
             </div>
           </div>
         </div>
