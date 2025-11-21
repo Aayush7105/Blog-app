@@ -9,6 +9,8 @@ if (!MONGODB_URI) {
 let isConnected = false;
 
 export async function connectToDatabase() {
+  if (mongoose.connection.readyState === 1) return;
+
   if (isConnected) return mongoose; // ✅ return mongoose if already connected
 
   try {
