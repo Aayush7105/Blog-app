@@ -160,7 +160,10 @@ export default function LandingPage() {
             Join hundreds of developers and tech enthusiasts who are already
             sharing their insights on TechBlog.
           </p>
-          <button className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition flex items-center gap-2 mx-auto">
+          <button
+            onClick={handleStartWriting}
+            className="bg-white text-indigo-600 px-8 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition flex items-center gap-2 mx-auto"
+          >
             Create Your First Post <ArrowRight className="h-5 w-5" />
           </button>
         </div>
