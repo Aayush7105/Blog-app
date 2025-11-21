@@ -11,6 +11,8 @@ import {
   Plus,
   Mail,
 } from "lucide-react";
+import { toast } from "sonner";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 // --- Interfaces ---
 interface BlogPost {
@@ -27,6 +29,7 @@ interface BlogPost {
 
 // --- Main Component ---
 const BlogApp: React.FC = () => {
+  const { data: session } = useSession();
   const [selectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
@@ -73,7 +76,7 @@ const BlogApp: React.FC = () => {
       !newBlog.category ||
       !newBlog.content
     ) {
-      alert("Please fill in all required fields.");
+      toast("Please fill in all required fields.");
       return;
     }
 
@@ -142,6 +145,7 @@ const BlogApp: React.FC = () => {
                   TechBlog
                 </span>
               </div>
+              <div className="text-black"> Sign in</div>
             </div>
           </div>
         </nav>
@@ -206,18 +210,44 @@ const BlogApp: React.FC = () => {
       {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
+          {/* Logo */}
           <div className="flex items-center">
             <BookOpen className="h-8 w-8 text-indigo-600" />
             <span className="ml-2 text-2xl font-bold text-neutral-900">
               TechBlog
             </span>
           </div>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
-          >
-            <Plus className="h-5 w-5" /> Add Blog
-          </button>
+
+          {/* Buttons */}
+          <div className="flex gap-5">
+            {session?.user ? (
+              // If logged in → SHOW SIGN OUT
+              <button
+                onClick={() => signOut()}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                Sign Out
+              </button>
+            ) : (
+              // If NOT logged in → SHOW SIGN IN
+              <button
+                onClick={() => signIn("google")}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+              >
+                Sign in
+              </button>
+            )}
+
+            {/* Add Blog Button (only show if user is logged in) */}
+            {session?.user && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+              >
+                <Plus className="h-5 w-5" /> Add Blog
+              </button>
+            )}
+          </div>
         </div>
       </nav>
 
