@@ -199,6 +199,34 @@ const BlogApp: React.FC = () => {
           </div>
 
           {/* Comments (Coming Later) */}
+          {/* --- Comments Section --- */}
+          <div className="mt-10 p-6 bg-white rounded-xl shadow-sm">
+            <h3 className="text-2xl font-bold mb-4 text-neutral-900">
+              Comments
+            </h3>
+
+            {/* Add Comment Box */}
+            {session?.user ? (
+              <div className="mb-6">
+                <textarea
+                  rows={3}
+                  placeholder="Write a comment..."
+                  className="w-full border border-neutral-300 p-3 rounded-lg text-black"
+                  value="This feature coming soon"
+                />
+
+                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-indigo-700">
+                  Post Comment
+                </button>
+              </div>
+            ) : (
+              <p className="text-neutral-600 mb-4">
+                Sign in to post a comment.
+              </p>
+            )}
+
+            {/* Comment List */}
+          </div>
         </article>
       </div>
     );
