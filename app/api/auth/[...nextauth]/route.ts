@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
+import Blog from "@/models/Blog";
 
 // Extend NextAuth types
 declare module "next-auth" {
@@ -11,6 +12,8 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       mongoId?: string;
+      // Added: ensure email is included for your Blog schema
+      authorEmail?: string | null;
     };
   }
 
@@ -66,6 +69,10 @@ export const authOptions: NextAuthOptions = {
     // SESSION CALLBACK
     async session({ session, token }) {
       session.user.mongoId = token.mongoId;
+
+      // Added: email already comes from NextAuth, this ensures it's available
+      session.user.authorEmail = session.user.email ?? null;
+
       return session;
     },
   },

@@ -72,7 +72,6 @@ const BlogApp: React.FC = () => {
     if (
       !newBlog.title ||
       !newBlog.excerpt ||
-      !newBlog.author ||
       !newBlog.category ||
       !newBlog.content
     ) {
@@ -93,6 +92,7 @@ const BlogApp: React.FC = () => {
       const res = await fetch("/api/blogs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(blogData),
       });
 
@@ -334,16 +334,6 @@ const BlogApp: React.FC = () => {
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
                   setNewBlog({ ...newBlog, excerpt: e.target.value })
-                }
-              />
-
-              <input
-                type="text"
-                placeholder="Author"
-                className="w-full border border-neutral-300 p-3 rounded-lg"
-                value={newBlog.author || ""}
-                onChange={(e) =>
-                  setNewBlog({ ...newBlog, author: e.target.value })
                 }
               />
 

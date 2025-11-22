@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import Blog from "@/models/Blog";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // --- GET all blogs ---
 export async function GET() {
@@ -24,7 +26,24 @@ export async function POST(request: Request) {
   try {
     await connectToDatabase();
     const body = await request.json();
-    const newPost = await Blog.create(body);
+
+    // 🔥 Proper session fetch for App Router
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const newPost = await Blog.create({
+      ...body,
+      author: session.user.name,
+      authorEmail: session.user.email,
+      authorId: session.user.mongoId,
+    });
+
     return NextResponse.json({ success: true, post: newPost });
   } catch (error) {
     console.error("Error adding blog:", error);
