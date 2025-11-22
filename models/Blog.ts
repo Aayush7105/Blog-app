@@ -9,6 +9,7 @@ export interface IBlog extends Document {
   image: string;
   readTime: string;
   content: string;
+  authorEmail: string;
 }
 
 const BlogSchema = new Schema<IBlog>({
@@ -20,6 +21,7 @@ const BlogSchema = new Schema<IBlog>({
   image: { type: String, required: true },
   readTime: { type: String, required: true },
   content: { type: String, required: true },
+  authorEmail: { type: String, required: true },
 });
 
 export default mongoose.models.Blog ||
