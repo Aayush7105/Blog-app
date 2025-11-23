@@ -7,3 +7,11 @@ export interface IComment extends Document {
   content: string;
   date: string;
 }
+
+const CommentSchema = new Schema<IComment>({
+  blogId: { type: String, required: true },
+  userName: { type: String, required: true },
+  userEmail: { type: String, required: true },
+  content: { type: String, required: true },
+  date: { type: String, required: true },
+});
