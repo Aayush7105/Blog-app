@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { connectToDatabase } from "@/lib/mongodb";
-import Comment from "@/models/Comments";
+import Comment from "@/models/Comment";
 
 export async function POST(req: Request) {
   await connectToDatabase();
@@ -23,4 +23,14 @@ export async function POST(req: Request) {
   });
 
   return NextResponse.json({ success: true, comment: newComment });
+}
+
+export async function GET(req: Request) {
+  await connectToDatabase();
+  const { searchParams } = new URL(req.url);
+  const blogId = searchParams.get("blogId");
+
+  const comments = await Comment.find({ blogId }).sort({ date: -1 });
+
+  return NextResponse.json({ success: true, comments });
 }
