@@ -15,3 +15,6 @@ const CommentSchema = new Schema<IComment>({
   content: { type: String, required: true },
   date: { type: String, required: true },
 });
+
+export default mongoose.models.Comment ||
+  mongoose.model<IComment>("Comment", CommentSchema);
