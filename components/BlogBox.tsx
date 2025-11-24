@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
+import React from "react";
 
 const Editor = dynamic(
   () => import("@tinymce/tinymce-react").then((mod) => mod.Editor),
@@ -9,50 +9,23 @@ const Editor = dynamic(
 );
 
 interface Props {
-  initialContent?: string; // only used once on mount
-  onChange?: (value: string) => void; // debounced
-  apiKey?: string;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const BlogBox: React.FC<Props> = ({
-  initialContent = "",
-  onChange,
-  apiKey = "",
-}) => {
-  const firstMountRef = useRef(true);
-  const debounceRef = useRef<number | null>(null);
-
-  // Handler invoked by TinyMCE on every keystroke
-  const handleEditorChange = (content: string) => {
-    // debounce parent updates to avoid re-renders on every keypress
-    if (debounceRef.current) {
-      window.clearTimeout(debounceRef.current);
-    }
-    debounceRef.current = window.setTimeout(() => {
-      onChange?.(content);
-    }, 250); // 250ms debounce (adjustable)
-  };
-
-  // We pass initialValue only once (TinyMCE uses it on mount).
-  // If the parent later opens editor for another post, re-mounting modal is ok.
+const BlogBox: React.FC<Props> = ({ value, onChange }) => {
   return (
     <Editor
-      apiKey={apiKey}
-      initialValue={initialContent}
+      apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || ""}
+      initialValue={value}
       init={{
-        height: 320,
+        height: 300,
         menubar: false,
-        plugins: [
-          "advlist autolink lists link image charmap preview anchor",
-          "searchreplace visualblocks code fullscreen",
-          "insertdatetime media table help wordcount",
-        ],
+        plugins: ["lists", "link", "autolink", "preview"],
         toolbar:
-          "undo redo | formatselect | bold italic underline | \
-          alignleft aligncenter alignright alignjustify | \
-          bullist numlist outdent indent | removeformat | help",
+          "undo redo | bold italic underline | bullist numlist | link | preview",
       }}
-      onEditorChange={handleEditorChange}
+      onEditorChange={(content) => onChange(content)}
     />
   );
 };
