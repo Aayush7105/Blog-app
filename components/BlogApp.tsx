@@ -13,6 +13,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
+import dynamic from "next/dynamic";
+import "easymde/dist/easymde.min.css";
+import { Editor } from "@tinymce/tinymce-react";
+
+// Load SimpleMDE safely (no SSR)
+const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
+  ssr: false,
+});
 
 // --- Interfaces ---
 interface BlogPost {
@@ -37,7 +45,7 @@ const BlogApp: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // --- Fetch Blogs From Database ---
+  // --- Fetch Blogs ---
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
@@ -45,9 +53,7 @@ const BlogApp: React.FC = () => {
         const res = await fetch("/api/blogs");
         const data = await res.json();
 
-        if (data.success) {
-          setBlogPosts(data.posts);
-        }
+        if (data.success) setBlogPosts(data.posts);
       } catch (err) {
         console.error("Error loading blogs:", err);
       } finally {
@@ -86,6 +92,7 @@ const BlogApp: React.FC = () => {
         "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&h=700&fit=crop",
       readTime: newBlog.readTime || "5 min read",
       date: new Date().toLocaleDateString(),
+      author: session?.user?.name || "Unknown Author",
     };
 
     try {
@@ -109,12 +116,11 @@ const BlogApp: React.FC = () => {
       console.error("Error adding blog:", error);
       alert("An error occurred while adding your blog.");
     }
-  }, [newBlog]);
+  }, [newBlog, session]);
 
   // --- Delete Blog ---
   const handleDeleteBlog = useCallback(async (id?: string) => {
     if (!id) return;
-
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
@@ -150,7 +156,7 @@ const BlogApp: React.FC = () => {
           </div>
         </nav>
 
-        {/* Post Content */}
+        {/* Post */}
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => setSelectedPost(null)}
@@ -178,55 +184,16 @@ const BlogApp: React.FC = () => {
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-3 mb-6">
-            <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">
-              <ThumbsUp className="h-4 w-4" /> Like
-            </button>
-
-            <button
-              onClick={() => handleDeleteBlog(selectedPost._id)}
-              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition ml-auto"
-            >
-              Delete
-            </button>
+          <div className="prose prose-lg max-w-none mb-8 whitespace-pre-wrap">
+            {selectedPost.content}
           </div>
 
-          <div className="prose prose-lg max-w-none mb-8">
-            <p className="text-neutral-800 leading-relaxed">
-              {selectedPost.content}
-            </p>
-          </div>
-
-          {/* Comments (Coming Later) */}
-          {/* --- Comments Section --- */}
-          <div className="mt-10 p-6 bg-white rounded-xl shadow-sm">
-            <h3 className="text-2xl font-bold mb-4 text-neutral-900">
-              Comments
-            </h3>
-
-            {/* Add Comment Box */}
-            {session?.user ? (
-              <div className="mb-6">
-                <textarea
-                  rows={3}
-                  placeholder="Write a comment..."
-                  className="w-full border border-neutral-300 p-3 rounded-lg text-black"
-                  value="This feature coming soon"
-                />
-
-                <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg mt-2 hover:bg-indigo-700">
-                  Post Comment
-                </button>
-              </div>
-            ) : (
-              <p className="text-neutral-600 mb-4">
-                Sign in to post a comment.
-              </p>
-            )}
-
-            {/* Comment List */}
-          </div>
+          <button
+            onClick={() => handleDeleteBlog(selectedPost._id)}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 ml-auto"
+          >
+            Delete
+          </button>
         </article>
       </div>
     );
@@ -238,7 +205,6 @@ const BlogApp: React.FC = () => {
       {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
-          {/* Logo */}
           <div className="flex items-center">
             <BookOpen className="h-8 w-8 text-indigo-600" />
             <span className="ml-2 text-2xl font-bold text-neutral-900">
@@ -246,18 +212,15 @@ const BlogApp: React.FC = () => {
             </span>
           </div>
 
-          {/* Buttons */}
           <div className="flex gap-5">
             {session?.user ? (
-              // If logged in → SHOW SIGN OUT
               <button
                 onClick={() => signOut()}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
               >
                 Sign Out
               </button>
             ) : (
-              // If NOT logged in → SHOW SIGN IN
               <button
                 onClick={() => signIn("google")}
                 className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
@@ -266,7 +229,6 @@ const BlogApp: React.FC = () => {
               </button>
             )}
 
-            {/* Add Blog Button (only show if user is logged in) */}
             {session?.user && (
               <button
                 onClick={() => setIsAddModalOpen(true)}
@@ -279,7 +241,7 @@ const BlogApp: React.FC = () => {
         </div>
       </nav>
 
-      {/* Featured Post */}
+      {/* Featured */}
       {featuredPost && (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -295,7 +257,7 @@ const BlogApp: React.FC = () => {
               </p>
               <button
                 onClick={() => setSelectedPost(featuredPost)}
-                className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50 transition"
+                className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-semibold hover:bg-indigo-50"
               >
                 Read More
               </button>
@@ -315,7 +277,7 @@ const BlogApp: React.FC = () => {
             <article
               key={post._id}
               onClick={() => setSelectedPost(post)}
-              className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer p-6"
+              className="bg-white rounded-lg shadow-md p-6 cursor-pointer hover:shadow-xl transition"
             >
               <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-600 text-sm rounded-full mb-3">
                 {post.category}
@@ -380,13 +342,19 @@ const BlogApp: React.FC = () => {
                   ))}
               </select>
 
-              <textarea
-                placeholder="Content"
-                className="w-full border border-neutral-300 p-3 rounded-lg"
-                rows={5}
-                value={newBlog.content || ""}
-                onChange={(e) =>
-                  setNewBlog({ ...newBlog, content: e.target.value })
+              {/* SimpleMDE Markdown Editor */}
+              <Editor
+                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
+                initialValue={newBlog.content || ""}
+                init={{
+                  height: 300,
+                  menubar: false,
+                  plugins: ["lists", "link", "autolink", "preview"],
+                  toolbar:
+                    "undo redo | bold italic underline | bullist numlist | link | preview",
+                }}
+                onEditorChange={(content) =>
+                  setNewBlog({ ...newBlog, content })
                 }
               />
             </div>
@@ -426,55 +394,29 @@ const BlogApp: React.FC = () => {
           <div>
             <h3 className="font-semibold mb-4">Quick Links</h3>
             <ul className="space-y-2 text-neutral-400">
-              <li>
-                <a className="hover:text-white" href="#">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-white" href="#">
-                  Articles
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-white" href="#">
-                  About
-                </a>
-              </li>
+              <li>Home</li>
+              <li>Articles</li>
+              <li>About</li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold mb-4">Categories</h3>
             <ul className="space-y-2 text-neutral-400">
-              <li>
-                <a className="hover:text-white" href="#">
-                  Development
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-white" href="#">
-                  Design
-                </a>
-              </li>
-              <li>
-                <a className="hover:text-white" href="#">
-                  Technology
-                </a>
-              </li>
+              <li>Development</li>
+              <li>Design</li>
+              <li>Technology</li>
             </ul>
           </div>
 
           <div>
             <h3 className="font-semibold mb-4">Newsletter</h3>
             <p className="text-neutral-400 mb-4">
-              Subscribe for weekly updates and insights.
+              Subscribe for weekly updates.
             </p>
-            <div className="flex items-center gap-2 rounded-lg cursor-pointer">
+            <div className="flex items-center gap-2">
               <Mail className="h-4 w-4" />
-              <p className="m-0 p-0 leading-none text-sm">
-                aayushrawat5107@gmail.com
-              </p>
+              <p className="text-sm">aayushrawat5107@gmail.com</p>
             </div>
           </div>
         </div>
