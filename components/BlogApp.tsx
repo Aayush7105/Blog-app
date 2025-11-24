@@ -1,5 +1,7 @@
 "use client";
 
+
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   BookOpen,
@@ -14,13 +16,12 @@ import {
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
-import "easymde/dist/easymde.min.css";
-import { Editor } from "@tinymce/tinymce-react";
 
-// Load SimpleMDE safely (no SSR)
-const SimpleMDE = dynamic(() => import("react-simplemde-editor"), {
-  ssr: false,
-});
+// Dynamically import TinyMCE Editor (ssr: false)
+const Editor = dynamic(
+  () => import("@tinymce/tinymce-react").then((mod) => mod.Editor),
+  { ssr: false }
+);
 
 // --- Interfaces ---
 interface BlogPost {
@@ -52,7 +53,6 @@ const BlogApp: React.FC = () => {
         setLoading(true);
         const res = await fetch("/api/blogs");
         const data = await res.json();
-
         if (data.success) setBlogPosts(data.posts);
       } catch (err) {
         console.error("Error loading blogs:", err);
@@ -60,7 +60,6 @@ const BlogApp: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchBlogs();
   }, []);
 
@@ -156,7 +155,7 @@ const BlogApp: React.FC = () => {
           </div>
         </nav>
 
-        {/* Post */}
+        {/* Post Content */}
         <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <button
             onClick={() => setSelectedPost(null)}
@@ -342,21 +341,10 @@ const BlogApp: React.FC = () => {
                   ))}
               </select>
 
-              {/* SimpleMDE Markdown Editor */}
-              <Editor
-                apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY}
-                initialValue={newBlog.content || ""}
-                init={{
-                  height: 300,
-                  menubar: false,
-                  plugins: ["lists", "link", "autolink", "preview"],
-                  toolbar:
-                    "undo redo | bold italic underline | bullist numlist | link | preview",
-                }}
-                onEditorChange={(content) =>
-                  setNewBlog({ ...newBlog, content })
-                }
-              />
+              {/* TinyMCE Editor */}
+              <div>
+                <BLogEditor
+              </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
