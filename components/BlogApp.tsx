@@ -1,7 +1,5 @@
 "use client";
 
-
-
 import React, { useState, useEffect, useCallback } from "react";
 import {
   BookOpen,
@@ -16,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
+import BlogBox from "./BlogBox";
 
 // Dynamically import TinyMCE Editor (ssr: false)
 const Editor = dynamic(
@@ -343,7 +342,12 @@ const BlogApp: React.FC = () => {
 
               {/* TinyMCE Editor */}
               <div>
-                <BLogEditor
+                <BlogBox
+                  value={newBlog.content || ""}
+                  onChange={(value) =>
+                    setNewBlog({ ...newBlog, content: value })
+                  }
+                />
               </div>
             </div>
 

@@ -13,7 +13,7 @@ interface Props {
   onChange: (value: string) => void;
 }
 
-const BlogEditor: React.FC<Props> = ({ value, onChange }) => {
+const BlogBox: React.FC<Props> = ({ value, onChange }) => {
   return (
     <Editor
       apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || ""}
@@ -30,4 +30,4 @@ const BlogEditor: React.FC<Props> = ({ value, onChange }) => {
   );
 };
 
-export default React.memo(BlogEditor);
+export default React.memo(BlogBox);
