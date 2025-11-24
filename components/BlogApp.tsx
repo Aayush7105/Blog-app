@@ -62,6 +62,11 @@ const BlogApp: React.FC = () => {
     fetchBlogs();
   }, []);
 
+  const handleEditorChange = React.useCallback((content: string) => {
+    // use functional setState so this callback doesn't need newBlog in deps
+    setNewBlog((prev) => ({ ...prev, content }));
+  }, []);
+
   const categories: string[] = ["All", "Development", "Design", "Technology"];
 
   const filteredPosts =
@@ -343,10 +348,9 @@ const BlogApp: React.FC = () => {
               {/* TinyMCE Editor */}
               <div>
                 <BlogBox
-                  value={newBlog.content || ""}
-                  onChange={(value) =>
-                    setNewBlog({ ...newBlog, content: value })
-                  }
+                  initialContent={newBlog.content || ""} // only for initial load
+                  onChange={handleEditorChange}
+                  apiKey={process.env.NEXT_PUBLIC_TINYMCE_API_KEY || ""}
                 />
               </div>
             </div>
