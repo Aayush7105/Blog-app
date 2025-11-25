@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import BlogBox from "./BlogBox";
+import CustomEditor from "./CustomEditor";
 
 // --- Interfaces ---
 interface BlogPost {
@@ -315,7 +316,12 @@ const BlogApp: React.FC = () => {
                   ))}
               </select>
 
-              <BlogBox onChange={handleEditorChange} value={""} />
+              <CustomEditor
+                value={newBlog.content || ""}
+                onChange={(html) =>
+                  setNewBlog((prev) => ({ ...prev, content: html }))
+                }
+              />
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
