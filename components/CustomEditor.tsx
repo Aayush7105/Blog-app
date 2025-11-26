@@ -1,6 +1,16 @@
 "use client";
 
 import React, { useRef, useEffect } from "react";
+import {
+  Bold,
+  Italic,
+  Underline,
+  Strikethrough,
+  Quote,
+  List,
+  ListOrdered,
+  Code,
+} from "lucide-react";
 
 export default function CustomEditor({
   value,
@@ -20,9 +30,8 @@ export default function CustomEditor({
     }
   }, [value]);
 
-  // Execute formatting commands
-  const exec = (cmd: string, val?: string) => {
-    document.execCommand(cmd, false, val);
+  const exec = (cmd: string, val?: string | null) => {
+    document.execCommand(cmd, false, val ?? undefined);
     onChange(editorRef.current?.innerHTML || "");
   };
 
@@ -32,63 +41,91 @@ export default function CustomEditor({
 
   return (
     <div className="w-full">
-      {/* Minimal Toolbar */}
+      {/* Toolbar styled like your screenshot */}
       <div
         className="
-          flex items-center gap-1 mb-3 px-2 py-1
-          bg-white/70 backdrop-blur-md
-          border border-neutral-200 
-          rounded-xl shadow-sm
-        "
+        flex items-center gap-2 mb-3 px-3 py-2
+        bg-white border border-neutral-300
+        rounded-lg shadow-sm
+      "
       >
-        <Icon icon="B" onClick={() => exec("bold")} />
-        <Icon icon="I" onClick={() => exec("italic")} />
-        <Icon icon="U" onClick={() => exec("underline")} />
+        {/* Headings */}
+        <Dropdown />
 
-        <Divider />
+        <IconButton icon={<Bold size={16} />} onClick={() => exec("bold")} />
+        <IconButton
+          icon={<Italic size={16} />}
+          onClick={() => exec("italic")}
+        />
+        <IconButton
+          icon={<Underline size={16} />}
+          onClick={() => exec("underline")}
+        />
+        <IconButton
+          icon={<Strikethrough size={16} />}
+          onClick={() => exec("strikeThrough")}
+        />
 
-        <Icon icon="H1" onClick={() => exec("formatBlock", "<h2>")} />
-        <Icon icon="H2" onClick={() => exec("formatBlock", "<h3>")} />
+        <IconDivider />
 
-        <Divider />
+        <IconButton
+          icon={<Code size={16} />}
+          onClick={() => exec("formatBlock", "<pre>")}
+        />
 
-        <Icon icon="❝" onClick={() => exec("formatBlock", "<blockquote>")} />
-        <Icon icon="</>" onClick={() => exec("formatBlock", "<pre>")} />
+        <IconButton
+          icon={<Quote size={16} />}
+          onClick={() => exec("formatBlock", "<blockquote>")}
+        />
 
-        <Divider />
+        <IconDivider />
 
-        <Icon icon="↺" onClick={() => exec("undo")} />
-        <Icon icon="↻" onClick={() => exec("redo")} />
+        {/* BULLET LIST (FULLY WORKING) */}
+        <IconButton
+          icon={<List size={16} />}
+          onClick={() => exec("insertUnorderedList")}
+        />
+
+        {/* ORDERED LIST (WORKS TOO) */}
+        <IconButton
+          icon={<ListOrdered size={16} />}
+          onClick={() => exec("insertOrderedList")}
+        />
       </div>
 
-      {/* Editor */}
+      {/* Editor area */}
       <div
         ref={editorRef}
         contentEditable
         onInput={handleInput}
         className="
-          border border-neutral-300 rounded-2xl p-5
-          bg-white shadow-sm
-          min-h-[220px]
+          min-h-[200px] p-4
+          border border-neutral-300 rounded-lg
+          shadow-sm bg-white
           focus:outline-none focus:ring-2 focus:ring-neutral-300
-          text-[16px] leading-relaxed font-[system-ui]
+          leading-relaxed text-[15px]
         "
       />
     </div>
   );
 }
 
-/* Enhanced Icon Button - FIXED for bullets */
-function Icon({ onClick, icon }: { onClick: () => void; icon: string }) {
+/* Icon Button */
+function IconButton({
+  icon,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <button
-      onMouseDown={(e) => e.preventDefault()} // ⭐ Prevent focus loss (bullets work)
+      onMouseDown={(e) => e.preventDefault()} // ⭐ FIXES BULLETS
       onClick={onClick}
       className="
-        px-2 py-1 text-neutral-700 text-[13px]
-        rounded-md
-        hover:bg-neutral-200/70 active:bg-neutral-300
-        transition-all select-none
+        p-1.5 rounded-md
+        hover:bg-neutral-200 active:bg-neutral-300
+        transition text-neutral-700
       "
     >
       {icon}
@@ -96,7 +133,28 @@ function Icon({ onClick, icon }: { onClick: () => void; icon: string }) {
   );
 }
 
-/* Clean divider */
-function Divider() {
-  return <div className="h-4 w-[1px] bg-neutral-300 mx-1"></div>;
+/* Divider */
+function IconDivider() {
+  return <div className="w-[1px] h-4 bg-neutral-300 mx-1" />;
+}
+
+/* Heading Dropdown */
+function Dropdown() {
+  return (
+    <select
+      onMouseDown={(e) => e.preventDefault()} // prevent blur
+      onChange={(e) => {
+        document.execCommand("formatBlock", false, `<${e.target.value}>`);
+      }}
+      className="
+        text-sm border border-neutral-300 rounded px-2 py-1
+        bg-white hover:bg-neutral-100 transition
+      "
+    >
+      <option value="div">Aa</option>
+      <option value="h1">H1</option>
+      <option value="h2">H2</option>
+      <option value="h3">H3</option>
+    </select>
+  );
 }
