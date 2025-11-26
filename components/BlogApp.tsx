@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
-import BlogBox from "./BlogBox";
 import CustomEditor from "./CustomEditor";
 
 // --- Interfaces ---
@@ -37,27 +36,27 @@ const BlogApp: React.FC = () => {
 
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
+  // NEW: freeze editor initial content so editor does NOT re-render while typing
+  const [frozenInitialContent, setFrozenInitialContent] = useState("");
   const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({});
-  const [frozenInitialContent, setFrozenInitialContent] = useState(""); // ⭐ Fix cursor jump
 
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  // Freeze TinyMCE initial content only when modal opens
+  // Freeze editor content only once when modal opens
   useEffect(() => {
     if (isAddModalOpen) {
       setFrozenInitialContent(newBlog.content || "");
     }
   }, [isAddModalOpen]);
 
-  // Fetch blogs
+  // Fetch Blogs
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
         setLoading(true);
         const res = await fetch("/api/blogs");
         const data = await res.json();
-
         if (data.success) setBlogPosts(data.posts);
       } catch (err) {
         console.error("Error loading blogs:", err);
@@ -65,10 +64,10 @@ const BlogApp: React.FC = () => {
         setLoading(false);
       }
     };
-
     fetchBlogs();
   }, []);
 
+  // Editor change handler (does NOT push value back to editor)
   const handleEditorChange = useCallback((content: string) => {
     setNewBlog((prev) => ({ ...prev, content }));
   }, []);
@@ -117,6 +116,7 @@ const BlogApp: React.FC = () => {
         setBlogPosts((prev) => [data.post, ...prev]);
         setIsAddModalOpen(false);
         setNewBlog({});
+        setFrozenInitialContent("");
       } else {
         alert(`Failed to add blog: ${data.error}`);
       }
@@ -129,12 +129,11 @@ const BlogApp: React.FC = () => {
   // Delete Blog
   const handleDeleteBlog = useCallback(async (id?: string) => {
     if (!id) return;
-    if (!window.confirm("Are you sure you want to delete this blog?")) return;
+    if (!window.confirm("Delete this blog?")) return;
 
     try {
       const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
       const data = await res.json();
-
       if (data.success) {
         setBlogPosts((prev) => prev.filter((p) => p._id !== id));
         setSelectedPost(null);
@@ -164,7 +163,7 @@ const BlogApp: React.FC = () => {
             onClick={() => setSelectedPost(null)}
             className="flex items-center text-indigo-600 mb-6"
           >
-            <ArrowLeft className="h-5 w-5 mr-2" /> Back to Articles
+            <ArrowLeft className="h-5 w-5 mr-2" /> Back
           </button>
 
           <h1 className="text-4xl font-bold mb-4">{selectedPost.title}</h1>
@@ -197,9 +196,10 @@ const BlogApp: React.FC = () => {
     );
   }
 
-  // Home Page UI
+  // Home Page
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col">
+      {/* Navbar */}
       <nav className="bg-white shadow-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4">
           <div className="flex items-center">
@@ -235,7 +235,7 @@ const BlogApp: React.FC = () => {
         </div>
       </nav>
 
-      {/* Featured */}
+      {/* Featured Post */}
       {featuredPost && (
         <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-12">
           <div className="max-w-7xl mx-auto px-4">
@@ -316,11 +316,10 @@ const BlogApp: React.FC = () => {
                   ))}
               </select>
 
+              {/* ⭐ FIXED EDITOR */}
               <CustomEditor
-                value={newBlog.content || ""}
-                onChange={(html) =>
-                  setNewBlog((prev) => ({ ...prev, content: html }))
-                }
+                value={frozenInitialContent}
+                onChange={handleEditorChange}
               />
             </div>
 
