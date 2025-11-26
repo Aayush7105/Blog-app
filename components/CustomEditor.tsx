@@ -10,8 +10,17 @@ import {
   List,
   ListOrdered,
   Code,
+  RotateCcw,
+  RotateCw,
 } from "lucide-react";
 
+/**
+ * CustomEditor
+ * - uncontrolled contentEditable
+ * - initial content applied only once
+ * - saves/restores selection when executing commands
+ * - toolbar buttons use onMouseDown to prevent blur
+ */
 export default function CustomEditor({
   value,
   onChange,
@@ -19,10 +28,11 @@ export default function CustomEditor({
   value?: string;
   onChange: (html: string) => void;
 }) {
-  const editorRef = useRef<HTMLDivElement>(null);
+  const editorRef = useRef<HTMLDivElement | null>(null);
   const firstLoad = useRef(true);
+  const savedRangeRef = useRef<Range | null>(null);
 
-  // Load initial value only once
+  // set initial content only once
   useEffect(() => {
     if (firstLoad.current && editorRef.current) {
       editorRef.current.innerHTML = value || "";
@@ -30,131 +40,205 @@ export default function CustomEditor({
     }
   }, [value]);
 
-  const exec = (cmd: string, val?: string | null) => {
-    document.execCommand(cmd, false, val ?? undefined);
+  // Save selection when editor loses selection; called from onMouseUp / keyup
+  const saveSelection = () => {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
+    }
+  };
+
+  const restoreSelection = () => {
+    const range = savedRangeRef.current;
+    const sel = window.getSelection();
+    if (!range || !sel) return;
+    sel.removeAllRanges();
+    sel.addRange(range);
+  };
+
+  // Ensures editor has focus and selection restored before executing
+  const execCommandSafe = (cmd: string, val?: string | null) => {
+    // focus editor
+    editorRef.current?.focus();
+    // restore selection (if any)
+    restoreSelection();
+    // use execCommand; some browsers expect commands like "H1" for formatBlock
+    document.execCommand(cmd, false, val === null ? undefined : val);
+    // after change, save selection again (so caret remains)
+    saveSelection();
+    // notify parent
     onChange(editorRef.current?.innerHTML || "");
   };
 
+  // Input handler (typing)
   const handleInput = () => {
+    // update saved selection on input
+    saveSelection();
     onChange(editorRef.current?.innerHTML || "");
   };
 
   return (
     <div className="w-full">
-      {/* Toolbar styled like your screenshot */}
+      {/* Toolbar */}
       <div
         className="
-        flex items-center gap-2 mb-3 px-3 py-2
-        bg-white border border-neutral-300
-        rounded-lg shadow-sm
-      "
+          flex flex-wrap items-center gap-2 mb-3 px-3 py-2
+          bg-white border border-neutral-300 rounded-lg shadow-sm
+        "
       >
-        {/* Headings */}
-        <Dropdown />
+        {/* Heads-up: onMouseDown prevents toolbar click from blurring editor */}
+        <SelectHeading exec={execCommandSafe} />
 
-        <IconButton icon={<Bold size={16} />} onClick={() => exec("bold")} />
-        <IconButton
-          icon={<Italic size={16} />}
-          onClick={() => exec("italic")}
-        />
-        <IconButton
-          icon={<Underline size={16} />}
-          onClick={() => exec("underline")}
-        />
-        <IconButton
-          icon={<Strikethrough size={16} />}
-          onClick={() => exec("strikeThrough")}
-        />
+        <IconBtn
+          ariaLabel="Bold"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("bold")}
+        >
+          <Bold size={16} />
+        </IconBtn>
 
-        <IconDivider />
+        <IconBtn
+          ariaLabel="Italic"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("italic")}
+        >
+          <Italic size={16} />
+        </IconBtn>
 
-        <IconButton
-          icon={<Code size={16} />}
-          onClick={() => exec("formatBlock", "<pre>")}
-        />
+        <IconBtn
+          ariaLabel="Underline"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("underline")}
+        >
+          <Underline size={16} />
+        </IconBtn>
 
-        <IconButton
-          icon={<Quote size={16} />}
-          onClick={() => exec("formatBlock", "<blockquote>")}
-        />
+        <IconBtn
+          ariaLabel="Strikethrough"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("strikeThrough")}
+        >
+          <Strikethrough size={16} />
+        </IconBtn>
 
-        <IconDivider />
+        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
 
-        {/* BULLET LIST (FULLY WORKING) */}
-        <IconButton
-          icon={<List size={16} />}
-          onClick={() => exec("insertUnorderedList")}
-        />
+        <IconBtn
+          ariaLabel="Code block"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("formatBlock", "PRE")}
+        >
+          <Code size={16} />
+        </IconBtn>
 
-        {/* ORDERED LIST (WORKS TOO) */}
-        <IconButton
-          icon={<ListOrdered size={16} />}
-          onClick={() => exec("insertOrderedList")}
-        />
+        <IconBtn
+          ariaLabel="Blockquote"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("formatBlock", "BLOCKQUOTE")}
+        >
+          <Quote size={16} />
+        </IconBtn>
+
+        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
+
+        {/* LISTS: works because we prevent blur and restore selection */}
+        <IconBtn
+          ariaLabel="Bulleted list"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("insertUnorderedList")}
+        >
+          <List size={16} />
+        </IconBtn>
+
+        <IconBtn
+          ariaLabel="Numbered list"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("insertOrderedList")}
+        >
+          <ListOrdered size={16} />
+        </IconBtn>
+
+        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
+
+        <IconBtn
+          ariaLabel="Undo"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("undo")}
+        >
+          <RotateCcw size={16} />
+        </IconBtn>
+
+        <IconBtn
+          ariaLabel="Redo"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => execCommandSafe("redo")}
+        >
+          <RotateCw size={16} />
+        </IconBtn>
       </div>
 
-      {/* Editor area */}
+      {/* editable area */}
       <div
         ref={editorRef}
         contentEditable
+        suppressContentEditableWarning
         onInput={handleInput}
-        className="
-          min-h-[200px] p-4
-          border border-neutral-300 rounded-lg
-          shadow-sm bg-white
-          focus:outline-none focus:ring-2 focus:ring-neutral-300
-          leading-relaxed text-[15px]
-        "
+        onKeyUp={saveSelection}
+        onMouseUp={saveSelection}
+        className="min-h-[200px] p-4 border border-neutral-300 rounded-lg bg-white shadow-sm text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-300"
       />
     </div>
   );
 }
 
-/* Icon Button */
-function IconButton({
-  icon,
-  onClick,
+/* small selectable heading dropdown that uses proper H tokens (H1/H2/H3/P) */
+function SelectHeading({
+  exec,
 }: {
-  icon: React.ReactNode;
-  onClick: () => void;
+  exec: (cmd: string, val?: string | null) => void;
 }) {
   return (
-    <button
-      onMouseDown={(e) => e.preventDefault()} // ⭐ FIXES BULLETS
-      onClick={onClick}
-      className="
-        p-1.5 rounded-md
-        hover:bg-neutral-200 active:bg-neutral-300
-        transition text-neutral-700
-      "
+    <select
+      onMouseDown={(e) => e.preventDefault()}
+      onChange={(e) => {
+        const val = e.target.value;
+        exec("formatBlock", val === "P" ? "P" : val); // P or H1/H2/H3
+        // reset to P after applying to avoid accidental repeated changes
+        (e.target as HTMLSelectElement).value = "P";
+      }}
+      className="border border-neutral-200 px-2 py-1 rounded text-sm"
+      aria-label="Heading"
+      defaultValue="P"
     >
-      {icon}
-    </button>
+      <option value="P">Aa</option>
+      <option value="H1">H1</option>
+      <option value="H2">H2</option>
+      <option value="H3">H3</option>
+    </select>
   );
 }
 
-/* Divider */
-function IconDivider() {
-  return <div className="w-[1px] h-4 bg-neutral-300 mx-1" />;
-}
-
-/* Heading Dropdown */
-function Dropdown() {
+/* icon button component */
+function IconBtn({
+  children,
+  onClick,
+  onMouseDown,
+  ariaLabel,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  ariaLabel?: string;
+}) {
   return (
-    <select
-      onMouseDown={(e) => e.preventDefault()} // prevent blur
-      onChange={(e) => {
-        document.execCommand("formatBlock", false, `<${e.target.value}>`);
-      }}
-      className="
-        text-sm border border-neutral-300 rounded px-2 py-1
-        bg-white hover:bg-neutral-100 transition
-      "
+    <button
+      type="button"
+      aria-label={ariaLabel}
+      onMouseDown={onMouseDown}
+      onClick={onClick}
+      className="p-1.5 rounded-md hover:bg-neutral-200 transition"
     >
-      <option value="div">Aa</option>
-      <option value="h1">H1</option>
-      <option value="h2">H2</option>
-      <option value="h3">H3</option>
-    </select>
+      {children}
+    </button>
   );
 }
