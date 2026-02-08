@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   BookOpen,
   User,
@@ -8,6 +9,8 @@ import {
   Clock,
   Calendar,
   Plus,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -19,6 +22,7 @@ interface BlogPost {
   title: string;
   excerpt: string;
   author: string;
+  authorEmail?: string;
   date: string;
   category: string;
   image: string;
@@ -26,9 +30,12 @@ interface BlogPost {
   content: string;
 }
 
+type ThemeMode = "light" | "dark";
+
 const BlogApp: React.FC = () => {
   const { data: session } = useSession();
 
+  const [theme, setTheme] = useState<ThemeMode>("light");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
@@ -40,6 +47,24 @@ const BlogApp: React.FC = () => {
 
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const saved =
+      typeof window !== "undefined"
+        ? (localStorage.getItem("theme") as ThemeMode | null)
+        : null;
+    if (saved === "light" || saved === "dark") {
+      setTheme(saved);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("theme", theme);
+    }
+  }, [theme]);
+
+  const isDark = theme === "dark";
 
   // Freeze editor content only once when modal opens
   useEffect(() => {
@@ -145,36 +170,93 @@ const BlogApp: React.FC = () => {
   // Single Post View
   if (selectedPost) {
     return (
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <nav className="bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-50">
+      <div
+        className={
+          isDark
+            ? "min-h-screen bg-neutral-900 text-neutral-300"
+            : "min-h-screen bg-slate-50 text-slate-900"
+        }
+      >
+        <nav
+          className={`sticky top-0 z-50 border-b ${
+            isDark
+              ? "bg-neutral-900/80 border-neutral-700"
+              : "bg-white/80 border-slate-200"
+          } backdrop-blur`}
+        >
           <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <div className="h-9 w-9 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+              <div
+                className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                  isDark
+                    ? "bg-neutral-300 text-neutral-900"
+                    : "bg-slate-900 text-white"
+                }`}
+              >
                 <BookOpen className="h-5 w-5" />
               </div>
               <span className="text-xl font-semibold tracking-tight">
                 TechBlog
               </span>
             </div>
-            <button
-              onClick={() => setSelectedPost(null)}
-              className="text-sm font-medium text-slate-700 hover:text-slate-900"
-            >
-              Back to all posts
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setTheme(isDark ? "light" : "dark")}
+                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                  isDark
+                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
+                aria-label="Toggle theme"
+              >
+                {isDark ? (
+                  <>
+                    <Sun className="h-4 w-4" /> Light
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" /> Dark
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => setSelectedPost(null)}
+                className={`text-sm font-medium ${
+                  isDark
+                    ? "text-neutral-300 hover:text-white"
+                    : "text-slate-700 hover:text-slate-900"
+                }`}
+              >
+                Back to all posts
+              </button>
+            </div>
           </div>
         </nav>
 
         <article className="max-w-4xl mx-auto px-4 py-10">
           <button
             onClick={() => setSelectedPost(null)}
-            className="inline-flex items-center text-sm font-medium text-slate-600 hover:text-slate-900 mb-6"
+            className={`inline-flex items-center text-sm font-medium mb-6 ${
+              isDark
+                ? "text-neutral-300 hover:text-white"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
           </button>
 
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
-            <div className="aspect-[16/9] bg-slate-100">
+          <div
+            className={`rounded-2xl overflow-hidden shadow-sm border ${
+              isDark
+                ? "bg-neutral-900/70 border-neutral-700"
+                : "bg-white border-slate-200"
+            }`}
+          >
+            <div
+              className={`aspect-[16/9] ${
+                isDark ? "bg-neutral-700" : "bg-slate-100"
+              }`}
+            >
               {selectedPost.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -186,7 +268,13 @@ const BlogApp: React.FC = () => {
             </div>
 
             <div className="p-8">
-              <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+              <div
+                className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
+                  isDark
+                    ? "text-neutral-900 bg-neutral-300"
+                    : "text-slate-500 bg-slate-100"
+                }`}
+              >
                 {selectedPost.category}
               </div>
 
@@ -194,9 +282,27 @@ const BlogApp: React.FC = () => {
                 {selectedPost.title}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 mt-4">
+              <div
+                className={`flex flex-wrap items-center gap-4 text-sm mt-4 ${
+                  isDark ? "text-neutral-300" : "text-slate-600"
+                }`}
+              >
                 <span className="flex items-center gap-2">
-                  <User className="h-4 w-4" /> {selectedPost.author}
+                  <User className="h-4 w-4" />
+                  {selectedPost.authorEmail ? (
+                    <Link
+                      href={`/profile/${encodeURIComponent(
+                        selectedPost.authorEmail,
+                      )}`}
+                      className={
+                        isDark ? "hover:text-white" : "hover:text-slate-900"
+                      }
+                    >
+                      {selectedPost.author}
+                    </Link>
+                  ) : (
+                    <span>{selectedPost.author}</span>
+                  )}
                 </span>
                 <span className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" /> {selectedPost.date}
@@ -228,12 +334,30 @@ const BlogApp: React.FC = () => {
 
   // Home Page
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#e2e8f0,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%)]">
+    <div
+      className={
+        isDark
+          ? "min-h-screen bg-neutral-900 text-neutral-300 flex flex-col"
+          : "min-h-screen bg-slate-50 text-slate-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#e2e8f0,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%)]"
+      }
+    >
       {/* Navbar */}
-      <nav className="bg-white/80 backdrop-blur border-b border-slate-200 sticky top-0 z-50">
+      <nav
+        className={`sticky top-0 z-50 border-b ${
+          isDark
+            ? "bg-neutral-900/80 border-neutral-700"
+            : "bg-white/80 border-slate-200"
+        } backdrop-blur`}
+      >
         <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+            <div
+              className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                isDark
+                  ? "bg-neutral-300 text-neutral-900"
+                  : "bg-slate-900 text-white"
+              }`}
+            >
               <BookOpen className="h-5 w-5" />
             </div>
             <span className="text-xl font-semibold tracking-tight">
@@ -241,18 +365,58 @@ const BlogApp: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3 items-center">
+            <button
+              onClick={() => setTheme(isDark ? "light" : "dark")}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                isDark
+                  ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                  : "bg-slate-900 text-white hover:bg-slate-800"
+              }`}
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <>
+                  <Sun className="h-4 w-4" /> Light
+                </>
+              ) : (
+                <>
+                  <Moon className="h-4 w-4" /> Dark
+                </>
+              )}
+            </button>
+
             {session?.user ? (
               <>
+                {session.user.email && (
+                  <Link
+                    href="/profile"
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                      isDark
+                        ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    Profile
+                  </Link>
+                )}
                 <button
                   onClick={() => signOut()}
-                  className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    isDark
+                      ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
                 >
                   Sign Out
                 </button>
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 hover:bg-slate-800"
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition ${
+                    isDark
+                      ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                      : "bg-slate-900 text-white hover:bg-slate-800"
+                  }`}
                 >
                   <Plus className="h-4 w-4" /> Add Blog
                 </button>
@@ -260,7 +424,11 @@ const BlogApp: React.FC = () => {
             ) : (
               <button
                 onClick={() => signIn("google")}
-                className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-800"
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  isDark
+                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
               >
                 Sign in
               </button>
@@ -273,18 +441,52 @@ const BlogApp: React.FC = () => {
       {featuredPost && (
         <section className="relative">
           <div className="max-w-7xl mx-auto px-4 pt-10 pb-6">
-            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center bg-white/80 backdrop-blur border border-slate-200 rounded-3xl p-8 shadow-sm">
+            <div
+              className={`grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 shadow-sm border ${
+                isDark
+                  ? "bg-neutral-900/70 border-neutral-700"
+                  : "bg-white/80 border-slate-200"
+              } backdrop-blur`}
+            >
               <div>
-                <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-600 bg-slate-100 px-3 py-1 rounded-full">
+                <div
+                  className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
+                    isDark
+                      ? "text-neutral-900 bg-neutral-300"
+                      : "text-slate-600 bg-slate-100"
+                  }`}
+                >
                   Weekly Digest
                 </div>
                 <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight">
                   {featuredPost.title}
                 </h1>
-                <p className="text-slate-600 mt-4">{featuredPost.excerpt}</p>
-                <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+                <p
+                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-slate-600"}`}
+                >
+                  {featuredPost.excerpt}
+                </p>
+                <div
+                  className={`mt-6 flex flex-wrap items-center gap-4 text-sm ${
+                    isDark ? "text-neutral-300" : "text-slate-500"
+                  }`}
+                >
                   <span className="flex items-center gap-2">
-                    <User className="h-4 w-4" /> {featuredPost.author}
+                    <User className="h-4 w-4" />
+                    {featuredPost.authorEmail ? (
+                      <Link
+                        href={`/profile/${encodeURIComponent(
+                          featuredPost.authorEmail,
+                        )}`}
+                        className={
+                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                        }
+                      >
+                        {featuredPost.author}
+                      </Link>
+                    ) : (
+                      <span>{featuredPost.author}</span>
+                    )}
                   </span>
                   <span className="flex items-center gap-2">
                     <Clock className="h-4 w-4" /> {featuredPost.readTime}
@@ -293,16 +495,32 @@ const BlogApp: React.FC = () => {
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <button
                     onClick={() => setSelectedPost(featuredPost)}
-                    className="inline-flex items-center px-6 py-3 rounded-lg bg-slate-900 text-white text-sm font-semibold hover:bg-slate-800"
+                    className={`inline-flex items-center px-6 py-3 rounded-lg text-sm font-semibold transition ${
+                      isDark
+                        ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                        : "bg-slate-900 text-white hover:bg-slate-800"
+                    }`}
                   >
                     Read the feature
                   </button>
-                  <button className="inline-flex items-center px-6 py-3 rounded-lg border border-slate-300 text-slate-700 text-sm font-semibold hover:bg-slate-100">
+                  <button
+                    className={`inline-flex items-center px-6 py-3 rounded-lg border text-sm font-semibold transition ${
+                      isDark
+                        ? "border-neutral-700 text-neutral-300 hover:bg-white/10"
+                        : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                    }`}
+                  >
                     Browse the archive
                   </button>
                 </div>
               </div>
-              <div className="bg-slate-100 rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
+              <div
+                className={`rounded-2xl overflow-hidden shadow-sm border ${
+                  isDark
+                    ? "bg-neutral-700 border-neutral-700"
+                    : "bg-slate-100 border-slate-200"
+                }`}
+              >
                 {featuredPost.image && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -321,13 +539,21 @@ const BlogApp: React.FC = () => {
       <section className="max-w-7xl mx-auto px-4 pb-16">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-8">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            <p
+              className={`text-xs font-semibold uppercase tracking-widest ${
+                isDark ? "text-neutral-300" : "text-slate-500"
+              }`}
+            >
               Latest Stories
             </p>
             <h2 className="text-2xl md:text-3xl font-semibold mt-2">
-              Insights from the builders’ desk
+              Insights from the builders' desk
             </h2>
-            <p className="text-slate-600 mt-2 max-w-2xl">
+            <p
+              className={`mt-2 max-w-2xl ${
+                isDark ? "text-neutral-300" : "text-slate-600"
+              }`}
+            >
               Curated perspectives on development, product thinking, and the
               future of technology.
             </p>
@@ -341,8 +567,12 @@ const BlogApp: React.FC = () => {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition border ${
                     isActive
-                      ? "bg-slate-900 text-white border-slate-900"
-                      : "bg-white/80 text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                      ? isDark
+                        ? "bg-neutral-300 text-neutral-900 border-neutral-300"
+                        : "bg-slate-900 text-white border-slate-900"
+                      : isDark
+                        ? "bg-neutral-900/70 text-neutral-300 border-neutral-700 hover:border-neutral-600 hover:text-white"
+                        : "bg-white/80 text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900"
                   }`}
                 >
                   {category}
@@ -350,77 +580,97 @@ const BlogApp: React.FC = () => {
               );
             })}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/80 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
-              <p className="text-xs font-semibold uppercase text-slate-500">
-                Total posts
-              </p>
-              <p className="text-xl font-semibold mt-1">{blogPosts.length}</p>
-            </div>
-            <div className="bg-white/80 border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
-              <p className="text-xs font-semibold uppercase text-slate-500">
-                Topics
-              </p>
-              <p className="text-xl font-semibold mt-1">
-                {categories.length - 1}
-              </p>
-            </div>
-          </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {loading ? (
-          <p className="text-slate-500">Loading...</p>
-        ) : filteredPosts.length === 0 ? (
-          <p className="text-slate-500">No blogs available.</p>
-        ) : (
-          filteredPosts.map((post) => (
-            <article
-              key={post._id}
-              onClick={() => setSelectedPost(post)}
-              className="group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer"
-            >
-              <div className="aspect-[16/10] bg-slate-100">
-                {post.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    className="h-full w-full object-cover group-hover:scale-[1.02] transition"
-                  />
-                )}
-              </div>
-              <div className="p-6">
-                <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                  {post.category}
-                </span>
-                <h2 className="text-lg font-semibold mt-3">{post.title}</h2>
-                <p className="text-slate-600 mt-2 line-clamp-3">
-                  {post.excerpt}
-                </p>
-                <div className="flex items-center gap-4 text-xs text-slate-500 mt-4">
-                  <span className="flex items-center gap-2">
-                    <Calendar className="h-3 w-3" /> {post.date}
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <Clock className="h-3 w-3" /> {post.readTime}
-                  </span>
+          {loading ? (
+            <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
+              Loading...
+            </p>
+          ) : filteredPosts.length === 0 ? (
+            <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
+              No blogs available.
+            </p>
+          ) : (
+            filteredPosts.map((post) => (
+              <article
+                key={post._id}
+                onClick={() => setSelectedPost(post)}
+                className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border ${
+                  isDark
+                    ? "bg-neutral-900/70 border-neutral-700"
+                    : "bg-white border-slate-200"
+                }`}
+              >
+                <div
+                  className={`aspect-[16/10] ${
+                    isDark ? "bg-neutral-700" : "bg-slate-100"
+                  }`}
+                >
+                  {post.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      className="h-full w-full object-cover group-hover:scale-[1.02] transition"
+                    />
+                  )}
                 </div>
-              </div>
-            </article>
-          ))
-        )}
-      </div>
+                <div className="p-6">
+                  <span
+                    className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
+                      isDark
+                        ? "text-neutral-900 bg-neutral-300"
+                        : "text-slate-500 bg-slate-100"
+                    }`}
+                  >
+                    {post.category}
+                  </span>
+                  <h2 className="text-lg font-semibold mt-3">{post.title}</h2>
+                  <p
+                    className={`mt-2 line-clamp-3 ${
+                      isDark ? "text-neutral-300" : "text-slate-600"
+                    }`}
+                  >
+                    {post.excerpt}
+                  </p>
+                  <div
+                    className={`flex items-center gap-4 text-xs mt-4 ${
+                      isDark ? "text-neutral-300" : "text-slate-500"
+                    }`}
+                  >
+                    <span className="flex items-center gap-2">
+                      <Calendar className="h-3 w-3" /> {post.date}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-3 w-3" /> {post.readTime}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
+        </div>
       </section>
 
       {/* Add Blog Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-2xl w-full max-w-xl shadow-xl border border-slate-200">
+          <div
+            className={`p-6 rounded-2xl w-full max-w-xl shadow-xl border ${
+              isDark
+                ? "bg-neutral-900 border-neutral-700 text-neutral-300"
+                : "bg-white border-slate-200"
+            }`}
+          >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold">Add New Blog</h2>
               <button
-                className="text-sm text-slate-500 hover:text-slate-700"
+                className={`text-sm ${
+                  isDark
+                    ? "text-neutral-300 hover:text-neutral-300"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
                 onClick={() => setIsAddModalOpen(false)}
               >
                 Close
@@ -431,7 +681,11 @@ const BlogApp: React.FC = () => {
               <input
                 type="text"
                 placeholder="Title"
-                className="w-full border border-slate-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                  isDark
+                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
+                    : "border-slate-200 focus:ring-slate-400"
+                }`}
                 value={newBlog.title || ""}
                 onChange={(e) =>
                   setNewBlog((p) => ({ ...p, title: e.target.value }))
@@ -441,7 +695,11 @@ const BlogApp: React.FC = () => {
               <input
                 type="text"
                 placeholder="Excerpt"
-                className="w-full border border-slate-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                  isDark
+                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
+                    : "border-slate-200 focus:ring-slate-400"
+                }`}
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
                   setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
@@ -449,7 +707,11 @@ const BlogApp: React.FC = () => {
               />
 
               <select
-                className="w-full border border-slate-200 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-400"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                  isDark
+                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
+                    : "border-slate-200 focus:ring-slate-400"
+                }`}
                 value={newBlog.category || ""}
                 onChange={(e) =>
                   setNewBlog((p) => ({ ...p, category: e.target.value }))
@@ -472,13 +734,21 @@ const BlogApp: React.FC = () => {
 
             <div className="flex justify-end gap-3 mt-6">
               <button
-                className="px-4 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  isDark
+                    ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                }`}
                 onClick={() => setIsAddModalOpen(false)}
               >
                 Cancel
               </button>
               <button
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800"
+                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  isDark
+                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                    : "bg-slate-900 text-white hover:bg-slate-800"
+                }`}
                 onClick={handleAddBlog}
               >
                 Add Blog
@@ -488,8 +758,16 @@ const BlogApp: React.FC = () => {
         </div>
       )}
 
-      <footer className="bg-slate-900 text-white py-8 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-sm text-slate-300">
+      <footer
+        className={`py-8 mt-auto ${
+          isDark ? "bg-neutral-900 text-neutral-300" : "bg-slate-900 text-white"
+        }`}
+      >
+        <div
+          className={`max-w-7xl mx-auto px-4 text-sm ${
+            isDark ? "text-neutral-300" : "text-slate-300"
+          }`}
+        >
           (c) 2025 TechBlog. All rights reserved.
         </div>
       </footer>
