@@ -102,22 +102,22 @@ export default function LandingPage() {
         <div
           className={`absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl ${
             isDark
-              ? "bg-gradient-to-br from-cyan-500/30 via-sky-500/10 to-transparent"
-              : "bg-gradient-to-br from-amber-300/50 via-orange-200/30 to-transparent"
+              ? "bg-gradient-to-br from-white/10 via-white/5 to-transparent"
+              : "bg-gradient-to-br from-white/80 via-slate-100/60 to-transparent"
           }`}
         />
         <div
           className={`absolute top-32 -right-28 h-96 w-96 rounded-full blur-3xl ${
             isDark
-              ? "bg-gradient-to-br from-rose-500/25 via-fuchsia-500/10 to-transparent"
-              : "bg-gradient-to-br from-sky-300/40 via-cyan-200/20 to-transparent"
+              ? "bg-gradient-to-br from-white/8 via-white/5 to-transparent"
+              : "bg-gradient-to-br from-slate-200/50 via-zinc-100/40 to-transparent"
           }`}
         />
         <div
           className={`absolute bottom-0 left-1/3 h-80 w-80 rounded-full blur-3xl ${
             isDark
-              ? "bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent"
-              : "bg-gradient-to-br from-emerald-200/40 via-lime-200/20 to-transparent"
+              ? "bg-gradient-to-br from-white/6 via-white/4 to-transparent"
+              : "bg-gradient-to-br from-zinc-200/40 via-slate-100/40 to-transparent"
           }`}
         />
       </div>
@@ -186,20 +186,20 @@ export default function LandingPage() {
       {/* Hero Section */}
       <section className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
-          <div
-            className={`rounded-3xl p-[1px] shadow-[0_25px_70px_-50px_rgba(0,0,0,0.6)] ${
-              isDark
-                ? "bg-gradient-to-br from-cyan-500/30 via-neutral-900/70 to-rose-500/30"
-                : "bg-gradient-to-br from-amber-200 via-white to-sky-200"
-            }`}
-          >
             <div
-              className={`grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-12 border ${
+              className={`rounded-3xl p-[1px] shadow-[0_20px_60px_-45px_rgba(0,0,0,0.45)] ${
                 isDark
-                  ? "bg-neutral-950/80 border-neutral-800"
-                  : "bg-white/80 border-slate-200"
-              } backdrop-blur-2xl`}
+                  ? "bg-gradient-to-br from-white/10 via-neutral-900/70 to-white/10"
+                  : "bg-gradient-to-br from-white via-slate-100 to-white"
+              }`}
             >
+              <div
+                className={`grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-12 border ${
+                  isDark
+                    ? "bg-neutral-950/80 border-neutral-800"
+                    : "bg-white/85 border-slate-200"
+                } backdrop-blur-2xl`}
+              >
               <div>
               <p
                 className={`text-xs font-semibold uppercase tracking-widest ${
@@ -223,10 +223,10 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-4 mt-8">
                 <button
                   onClick={handleStartWriting}
-                  className={`px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 shadow-lg ${
+                  className={`px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 shadow-sm ${
                     isDark
-                      ? "bg-gradient-to-r from-cyan-300 to-emerald-300 text-neutral-900 hover:from-cyan-200 hover:to-emerald-200 shadow-cyan-500/20"
-                      : "bg-gradient-to-r from-amber-400 to-orange-500 text-neutral-950 hover:from-amber-300 hover:to-orange-400 shadow-amber-500/20"
+                      ? "bg-white text-neutral-900 hover:bg-neutral-100"
+                      : "bg-neutral-900 text-white hover:bg-neutral-800"
                   }`}
                 >
                   Start Writing <ArrowRight className="h-5 w-5" />
@@ -245,15 +245,15 @@ export default function LandingPage() {
             </div>
 
             <div className="grid gap-4">
-              <div
-                className={`rounded-2xl p-6 shadow-sm border ${
-                  isDark
-                    ? "bg-gradient-to-br from-neutral-900 via-neutral-900/80 to-neutral-800 text-neutral-200 border-neutral-800"
-                    : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white border-slate-800"
-                }`}
-              >
-                <p className="text-xs uppercase tracking-widest text-neutral-300">
-                  Featured Insight
+                <div
+                  className={`rounded-2xl p-6 shadow-sm border ${
+                    isDark
+                      ? "bg-neutral-900/70 text-neutral-200 border-neutral-800"
+                      : "bg-neutral-900 text-white border-neutral-900"
+                  }`}
+                >
+                  <p className="text-xs uppercase tracking-widest text-neutral-300">
+                    Featured Insight
                 </p>
                 <h3 className="text-xl font-semibold mt-3">
                   Building a thoughtful developer blog in 2025
@@ -421,8 +421,8 @@ export default function LandingPage() {
           <div
             className={`rounded-3xl p-[1px] ${
               isDark
-                ? "bg-gradient-to-r from-cyan-500/40 via-neutral-800/80 to-rose-500/40"
-                : "bg-gradient-to-r from-amber-200 via-white to-sky-200"
+                ? "bg-gradient-to-r from-white/10 via-neutral-900/70 to-white/10"
+                : "bg-gradient-to-r from-white via-slate-100 to-white"
             }`}
           >
             <div className="bg-neutral-950/90 text-white rounded-3xl p-10 md:p-12 grid gap-6 md:grid-cols-[1.2fr_0.8fr] items-center">
@@ -438,7 +438,7 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-4 md:justify-end">
                 <button
                   onClick={handleStartWriting}
-                  className="bg-gradient-to-r from-cyan-300 to-emerald-300 text-neutral-900 px-8 py-3 rounded-lg font-semibold hover:from-cyan-200 hover:to-emerald-200 transition inline-flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                  className="bg-white text-neutral-900 px-8 py-3 rounded-lg font-semibold hover:bg-neutral-100 transition inline-flex items-center gap-2 shadow-sm"
                 >
                   Create Your First Post <ArrowRight className="h-5 w-5" />
                 </button>
