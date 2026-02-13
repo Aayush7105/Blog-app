@@ -692,23 +692,70 @@ const BlogApp: React.FC = () => {
                 }
               />
 
-              <input
-                type="text"
-                placeholder="Excerpt"
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                  isDark
+                <input
+                  type="text"
+                  placeholder="Excerpt"
+                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                    isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
                     : "border-slate-200 focus:ring-slate-400"
                 }`}
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
-                  setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
-                }
-              />
+                    setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
+                  }
+                />
 
-              <select
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                  isDark
+                <div className="space-y-2">
+                  <div
+                    className={`text-xs font-semibold uppercase tracking-wide ${
+                      isDark ? "text-neutral-300" : "text-slate-600"
+                    }`}
+                  >
+                    Cover image
+                  </div>
+                  <input
+                    type="url"
+                    placeholder="Paste image URL (optional)"
+                    className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                      isDark
+                        ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
+                        : "border-slate-200 focus:ring-slate-400"
+                    }`}
+                    value={newBlog.image || ""}
+                    onChange={(e) =>
+                      setNewBlog((p) => ({ ...p, image: e.target.value }))
+                    }
+                  />
+                  <div
+                    className={`rounded-lg border overflow-hidden ${
+                      isDark
+                        ? "border-neutral-800 bg-neutral-900/70"
+                        : "border-slate-200 bg-slate-50"
+                    }`}
+                  >
+                    {newBlog.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={newBlog.image}
+                        alt="Cover preview"
+                        className="h-40 w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`h-40 w-full flex items-center justify-center text-xs ${
+                          isDark ? "text-neutral-400" : "text-slate-500"
+                        }`}
+                      >
+                        Image preview appears here
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <select
+                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                    isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
                     : "border-slate-200 focus:ring-slate-400"
                 }`}
