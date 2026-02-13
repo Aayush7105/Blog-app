@@ -84,8 +84,8 @@ export default function LandingPage() {
   const containerClass = useMemo(
     () =>
       isDark
-        ? "min-h-screen bg-neutral-900 text-neutral-300 flex flex-col"
-        : "min-h-screen bg-slate-50 text-slate-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#e2e8f0,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%)]",
+        ? "min-h-screen bg-neutral-950 text-neutral-200 flex flex-col relative overflow-hidden bg-[radial-gradient(1200px_circle_at_10%_-10%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(900px_circle_at_80%_0%,rgba(255,255,255,0.04),transparent_50%),linear-gradient(180deg,#0a0a0a,#0f0f0f)]"
+        : "min-h-screen text-slate-900 flex flex-col relative overflow-hidden bg-[radial-gradient(1200px_circle_at_20%_-10%,#f1f5f9,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%),linear-gradient(180deg,#fafafa,#f4f4f5)]",
     [isDark]
   );
 
@@ -98,13 +98,36 @@ export default function LandingPage() {
 
   return (
     <div className={containerClass}>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className={`absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl ${
+            isDark
+              ? "bg-gradient-to-br from-cyan-500/30 via-sky-500/10 to-transparent"
+              : "bg-gradient-to-br from-amber-300/50 via-orange-200/30 to-transparent"
+          }`}
+        />
+        <div
+          className={`absolute top-32 -right-28 h-96 w-96 rounded-full blur-3xl ${
+            isDark
+              ? "bg-gradient-to-br from-rose-500/25 via-fuchsia-500/10 to-transparent"
+              : "bg-gradient-to-br from-sky-300/40 via-cyan-200/20 to-transparent"
+          }`}
+        />
+        <div
+          className={`absolute bottom-0 left-1/3 h-80 w-80 rounded-full blur-3xl ${
+            isDark
+              ? "bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-transparent"
+              : "bg-gradient-to-br from-emerald-200/40 via-lime-200/20 to-transparent"
+          }`}
+        />
+      </div>
       {/* Navbar */}
       <nav
         className={`sticky top-0 z-50 border-b ${
           isDark
-            ? "bg-neutral-900/80 border-neutral-700"
-            : "bg-white/80 border-slate-200"
-        } backdrop-blur`}
+            ? "bg-neutral-950/70 border-neutral-800"
+            : "bg-white/70 border-slate-200"
+        } backdrop-blur-xl`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -161,16 +184,23 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative">
+      <section className="relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
           <div
-            className={`grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-12 shadow-sm border ${
+            className={`rounded-3xl p-[1px] shadow-[0_25px_70px_-50px_rgba(0,0,0,0.6)] ${
               isDark
-                ? "bg-neutral-900/70 border-neutral-700"
-                : "bg-white/80 border-slate-200"
-            } backdrop-blur`}
+                ? "bg-gradient-to-br from-cyan-500/30 via-neutral-900/70 to-rose-500/30"
+                : "bg-gradient-to-br from-amber-200 via-white to-sky-200"
+            }`}
           >
-            <div>
+            <div
+              className={`grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-12 border ${
+                isDark
+                  ? "bg-neutral-950/80 border-neutral-800"
+                  : "bg-white/80 border-slate-200"
+              } backdrop-blur-2xl`}
+            >
+              <div>
               <p
                 className={`text-xs font-semibold uppercase tracking-widest ${
                   isDark ? "text-neutral-300" : "text-slate-500"
@@ -193,10 +223,10 @@ export default function LandingPage() {
               <div className="flex flex-wrap gap-4 mt-8">
                 <button
                   onClick={handleStartWriting}
-                  className={`px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 ${
+                  className={`px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 shadow-lg ${
                     isDark
-                      ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                      : "bg-slate-900 text-white hover:bg-slate-800"
+                      ? "bg-gradient-to-r from-cyan-300 to-emerald-300 text-neutral-900 hover:from-cyan-200 hover:to-emerald-200 shadow-cyan-500/20"
+                      : "bg-gradient-to-r from-amber-400 to-orange-500 text-neutral-950 hover:from-amber-300 hover:to-orange-400 shadow-amber-500/20"
                   }`}
                 >
                   Start Writing <ArrowRight className="h-5 w-5" />
@@ -205,8 +235,8 @@ export default function LandingPage() {
                 <button
                   className={`px-8 py-3 rounded-lg font-semibold transition border ${
                     isDark
-                      ? "border-neutral-700 text-neutral-300 hover:bg-neutral-700"
-                      : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                      ? "border-neutral-700 text-neutral-200 hover:bg-white/10"
+                      : "border-slate-300 text-slate-700 hover:bg-white/70"
                   }`}
                 >
                   Read Articles
@@ -216,10 +246,10 @@ export default function LandingPage() {
 
             <div className="grid gap-4">
               <div
-                className={`rounded-2xl p-6 shadow-sm ${
+                className={`rounded-2xl p-6 shadow-sm border ${
                   isDark
-                    ? "bg-neutral-700 text-neutral-300"
-                    : "bg-slate-900 text-white"
+                    ? "bg-gradient-to-br from-neutral-900 via-neutral-900/80 to-neutral-800 text-neutral-200 border-neutral-800"
+                    : "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white border-slate-800"
                 }`}
               >
                 <p className="text-xs uppercase tracking-widest text-neutral-300">
@@ -235,10 +265,10 @@ export default function LandingPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div
-                  className={`rounded-2xl p-4 shadow-sm border ${
+                  className={`rounded-2xl p-4 shadow-sm border transition hover:-translate-y-1 ${
                     isDark
-                      ? "bg-neutral-900/70 border-neutral-700"
-                      : "bg-white border-slate-200"
+                      ? "bg-neutral-950/70 border-neutral-800"
+                      : "bg-white/90 border-slate-200"
                   }`}
                 >
                   <p
@@ -251,10 +281,10 @@ export default function LandingPage() {
                   <p className="text-xl font-semibold mt-2">1.2k+</p>
                 </div>
                 <div
-                  className={`rounded-2xl p-4 shadow-sm border ${
+                  className={`rounded-2xl p-4 shadow-sm border transition hover:-translate-y-1 ${
                     isDark
-                      ? "bg-neutral-900/70 border-neutral-700"
-                      : "bg-white border-slate-200"
+                      ? "bg-neutral-950/70 border-neutral-800"
+                      : "bg-white/90 border-slate-200"
                   }`}
                 >
                   <p
@@ -268,119 +298,13 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* User Posts */}
-      {session?.user?.email && (
-        <section className="max-w-7xl mx-auto px-4 pb-12">
-          <div
-            className={`rounded-3xl p-6 md:p-8 shadow-sm border mb-8 ${
-              isDark
-                ? "bg-neutral-900/70 border-neutral-700"
-                : "bg-white/80 border-slate-200"
-            } backdrop-blur`}
-          >
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <p
-                  className={`text-xs font-semibold uppercase tracking-widest ${
-                    isDark ? "text-neutral-300" : "text-slate-500"
-                  }`}
-                >
-                  Your Posts
-                </p>
-                <h2 className="text-2xl md:text-3xl font-semibold mt-2">
-                  {session.user.name || "Your"} writing desk
-                </h2>
-              </div>
-              <Link
-                href="/profile"
-                className={`text-sm font-semibold transition ${
-                  isDark
-                    ? "text-neutral-300 hover:text-white"
-                    : "text-slate-700 hover:text-slate-900"
-                }`}
-              >
-                View profile
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {userPostsLoading ? (
-              <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
-                Loading...
-              </p>
-            ) : userPosts.length === 0 ? (
-              <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
-                You have not published any posts yet.
-              </p>
-            ) : (
-              userPosts.map((post) => (
-                <article
-                  key={post._id}
-                  className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition border ${
-                    isDark
-                      ? "bg-neutral-900/70 border-neutral-700"
-                      : "bg-white border-slate-200"
-                  }`}
-                >
-                  <div
-                    className={`aspect-[16/10] ${
-                      isDark ? "bg-neutral-700" : "bg-slate-100"
-                    }`}
-                  >
-                    {post.image && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        className="h-full w-full object-cover group-hover:scale-[1.02] transition"
-                      />
-                    )}
-                  </div>
-                  <div className="p-6">
-                    <span
-                      className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
-                        isDark
-                          ? "text-neutral-900 bg-neutral-300"
-                          : "text-slate-500 bg-slate-100"
-                      }`}
-                    >
-                      {post.category}
-                    </span>
-                    <h3 className="text-lg font-semibold mt-3">{post.title}</h3>
-                    <p
-                      className={`mt-2 line-clamp-3 ${
-                        isDark ? "text-neutral-300" : "text-slate-600"
-                      }`}
-                    >
-                      {post.excerpt}
-                    </p>
-                    <div
-                      className={`flex items-center gap-4 text-xs mt-4 ${
-                        isDark ? "text-neutral-300" : "text-slate-500"
-                      }`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3" /> {post.date}
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <Clock className="h-3 w-3" /> {post.readTime}
-                      </span>
-                    </div>
-                  </div>
-                </article>
-              ))
-            )}
-          </div>
-        </section>
-      )}
-
       {/* Features Section */}
-      <section className="py-16">
+      <section className="py-16 relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-semibold mb-4">
@@ -398,11 +322,11 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-3 gap-8">
             <div
-              className={`p-8 rounded-2xl hover:shadow-md transition border ${
+              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
                 isDark
-                  ? "bg-neutral-900/70 border-neutral-700"
+                  ? "bg-neutral-950/80 border-neutral-800"
                   : "bg-white/80 border-slate-200"
-              }`}
+              } backdrop-blur-2xl`}
             >
               <Zap
                 className={`h-10 w-10 mb-4 ${
@@ -417,11 +341,11 @@ export default function LandingPage() {
             </div>
 
             <div
-              className={`p-8 rounded-2xl hover:shadow-md transition border ${
+              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
                 isDark
-                  ? "bg-neutral-900/70 border-neutral-700"
+                  ? "bg-neutral-950/80 border-neutral-800"
                   : "bg-white/80 border-slate-200"
-              }`}
+              } backdrop-blur-2xl`}
             >
               <Users
                 className={`h-10 w-10 mb-4 ${
@@ -438,11 +362,11 @@ export default function LandingPage() {
             </div>
 
             <div
-              className={`p-8 rounded-2xl hover:shadow-md transition border ${
+              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
                 isDark
-                  ? "bg-neutral-900/70 border-neutral-700"
+                  ? "bg-neutral-950/80 border-neutral-800"
                   : "bg-white/80 border-slate-200"
-              }`}
+              } backdrop-blur-2xl`}
             >
               <Sparkles
                 className={`h-10 w-10 mb-4 ${
@@ -462,7 +386,7 @@ export default function LandingPage() {
       </section>
 
       {/* Categories Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
         <h2 className="text-3xl md:text-4xl font-semibold mb-12 text-center">
           Explore Topics
         </h2>
@@ -471,11 +395,11 @@ export default function LandingPage() {
             (category) => (
               <div
                 key={category}
-                className={`p-6 rounded-2xl shadow-sm hover:shadow-md transition cursor-pointer border ${
+                className={`p-6 rounded-2xl shadow-sm hover:shadow-lg transition cursor-pointer hover:-translate-y-1 border ${
                   isDark
-                    ? "bg-neutral-900/70 border-neutral-700"
+                    ? "bg-neutral-950/80 border-neutral-800"
                     : "bg-white/80 border-slate-200"
-                }`}
+                } backdrop-blur-2xl`}
               >
                 <h3 className="text-lg font-semibold mb-2">{category}</h3>
                 <p
@@ -492,35 +416,43 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16">
+      <section className="py-16 relative z-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-neutral-900 text-white rounded-3xl p-10 md:p-12 grid gap-6 md:grid-cols-[1.2fr_0.8fr] items-center">
-            <div>
-              <h2 className="text-3xl md:text-4xl font-semibold">
-                Ready to share your knowledge?
-              </h2>
-              <p className="text-neutral-300 mt-4 text-lg">
-                Join hundreds of developers and tech enthusiasts who are
-                already sharing their insights on TechBlog.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-4 md:justify-end">
-              <button
-                onClick={handleStartWriting}
-                className="bg-neutral-300 text-neutral-900 px-8 py-3 rounded-lg font-semibold hover:bg-neutral-200 transition inline-flex items-center gap-2"
-              >
-                Create Your First Post <ArrowRight className="h-5 w-5" />
-              </button>
-              <button className="border border-white/40 text-white px-8 py-3 rounded-lg font-semibold hover:bg-neutral-700 transition">
-                View Community
-              </button>
+          <div
+            className={`rounded-3xl p-[1px] ${
+              isDark
+                ? "bg-gradient-to-r from-cyan-500/40 via-neutral-800/80 to-rose-500/40"
+                : "bg-gradient-to-r from-amber-200 via-white to-sky-200"
+            }`}
+          >
+            <div className="bg-neutral-950/90 text-white rounded-3xl p-10 md:p-12 grid gap-6 md:grid-cols-[1.2fr_0.8fr] items-center">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-semibold">
+                  Ready to share your knowledge?
+                </h2>
+                <p className="text-neutral-300 mt-4 text-lg">
+                  Join hundreds of developers and tech enthusiasts who are
+                  already sharing their insights on TechBlog.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-4 md:justify-end">
+                <button
+                  onClick={handleStartWriting}
+                  className="bg-gradient-to-r from-cyan-300 to-emerald-300 text-neutral-900 px-8 py-3 rounded-lg font-semibold hover:from-cyan-200 hover:to-emerald-200 transition inline-flex items-center gap-2 shadow-lg shadow-cyan-500/20"
+                >
+                  Create Your First Post <ArrowRight className="h-5 w-5" />
+                </button>
+                <button className="border border-white/30 text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
+                  View Community
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-neutral-900 text-white mt-auto">
+      <footer className="bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 text-white mt-auto relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center mb-4">
