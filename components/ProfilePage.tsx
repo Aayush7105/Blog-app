@@ -45,6 +45,12 @@ export default function ProfilePage({ email }: { email: string }) {
   }, [theme]);
 
   useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
+  }, [theme]);
+
+  useEffect(() => {
     const load = async () => {
       try {
         setLoading(true);

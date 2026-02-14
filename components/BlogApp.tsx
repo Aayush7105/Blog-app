@@ -64,6 +64,12 @@ const BlogApp: React.FC = () => {
     }
   }, [theme]);
 
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
+  }, [theme]);
+
   const isDark = theme === "dark";
 
   // Freeze editor content only once when modal opens

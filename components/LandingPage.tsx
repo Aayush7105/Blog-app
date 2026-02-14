@@ -16,8 +16,7 @@ import {
   Linkedin,
   Sun,
   Moon,
-  Calendar,
-  Clock,
+  ChevronRight,
 } from "lucide-react";
 
 type ThemeMode = "light" | "dark";
@@ -56,6 +55,12 @@ export default function LandingPage() {
   }, [theme]);
 
   useEffect(() => {
+    if (typeof document !== "undefined") {
+      document.documentElement.classList.toggle("dark", theme === "dark");
+    }
+  }, [theme]);
+
+  useEffect(() => {
     const loadUserPosts = async () => {
       if (!session?.user?.email) {
         setUserPosts([]);
@@ -64,7 +69,7 @@ export default function LandingPage() {
       try {
         setUserPostsLoading(true);
         const res = await fetch(
-          `/api/blogs/author/${encodeURIComponent(session.user.email)}`
+          `/api/blogs/author/${encodeURIComponent(session.user.email)}`,
         );
         const data = await res.json();
         if (data.success) {
@@ -84,9 +89,9 @@ export default function LandingPage() {
   const containerClass = useMemo(
     () =>
       isDark
-        ? "min-h-screen bg-neutral-950 text-neutral-200 flex flex-col relative overflow-hidden bg-[radial-gradient(1200px_circle_at_10%_-10%,rgba(255,255,255,0.06),transparent_55%),radial-gradient(900px_circle_at_80%_0%,rgba(255,255,255,0.04),transparent_50%),linear-gradient(180deg,#0a0a0a,#0f0f0f)]"
-        : "min-h-screen text-slate-900 flex flex-col relative overflow-hidden bg-[radial-gradient(1200px_circle_at_20%_-10%,#f1f5f9,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%),linear-gradient(180deg,#fafafa,#f4f4f5)]",
-    [isDark]
+        ? "min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden"
+        : "min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden",
+    [isDark],
   );
 
   const handleStartWriting = async () => {
@@ -100,24 +105,18 @@ export default function LandingPage() {
     <div className={containerClass}>
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
-          className={`absolute -top-24 -left-24 h-72 w-72 rounded-full blur-3xl ${
-            isDark
-              ? "bg-gradient-to-br from-white/10 via-white/5 to-transparent"
-              : "bg-gradient-to-br from-white/80 via-slate-100/60 to-transparent"
+          className={`absolute -top-32 -left-32 h-80 w-80 rounded-full blur-3xl ${
+            isDark ? "bg-blue-500/10" : "bg-blue-400/15"
           }`}
         />
         <div
-          className={`absolute top-32 -right-28 h-96 w-96 rounded-full blur-3xl ${
-            isDark
-              ? "bg-gradient-to-br from-white/8 via-white/5 to-transparent"
-              : "bg-gradient-to-br from-slate-200/50 via-zinc-100/40 to-transparent"
+          className={`absolute top-40 -right-40 h-96 w-96 rounded-full blur-3xl ${
+            isDark ? "bg-blue-400/8" : "bg-blue-300/10"
           }`}
         />
         <div
-          className={`absolute bottom-0 left-1/3 h-80 w-80 rounded-full blur-3xl ${
-            isDark
-              ? "bg-gradient-to-br from-white/6 via-white/4 to-transparent"
-              : "bg-gradient-to-br from-zinc-200/40 via-slate-100/40 to-transparent"
+          className={`absolute bottom-20 left-1/4 h-72 w-72 rounded-full blur-3xl ${
+            isDark ? "bg-blue-500/5" : "bg-blue-200/8"
           }`}
         />
       </div>
@@ -125,35 +124,33 @@ export default function LandingPage() {
       <nav
         className={`sticky top-0 z-50 border-b ${
           isDark
-            ? "bg-neutral-950/70 border-neutral-800"
-            : "bg-white/70 border-slate-200"
-        } backdrop-blur-xl`}
+            ? "bg-background/80 border-border"
+            : "bg-background/80 border-border"
+        } backdrop-blur-md transition-all duration-300`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               <div
-                className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm transition-all duration-300 ${
                   isDark
-                    ? "bg-neutral-300 text-neutral-900"
-                    : "bg-slate-900 text-white"
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-primary text-primary-foreground"
                 }`}
               >
-                <BookOpen className="h-5 w-5" />
+                TB
               </div>
-              <span className="text-xl font-semibold tracking-tight">
-                TechBlog
-              </span>
+              <span className="text-lg font-bold tracking-tight">TechBlog</span>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               {session?.user?.email && (
                 <Link
                   href="/profile"
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ${
                     isDark
-                      ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                      ? "text-foreground hover:bg-secondary hover:text-foreground"
+                      : "text-foreground hover:bg-secondary hover:text-foreground"
                   }`}
                 >
                   Profile
@@ -161,21 +158,17 @@ export default function LandingPage() {
               )}
               <button
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition duration-300 border ${
                   isDark
-                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
+                    ? "border-border bg-secondary hover:bg-secondary text-foreground"
+                    : "border-border bg-secondary hover:bg-secondary text-foreground"
                 }`}
                 aria-label="Toggle theme"
               >
                 {isDark ? (
-                  <>
-                    <Sun className="h-4 w-4" /> Light
-                  </>
+                  <Sun className="h-4 w-4" />
                 ) : (
-                  <>
-                    <Moon className="h-4 w-4" /> Dark
-                  </>
+                  <Moon className="h-4 w-4" />
                 )}
               </button>
             </div>
@@ -184,265 +177,205 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-10">
-            <div
-              className={`rounded-3xl p-[1px] shadow-[0_20px_60px_-45px_rgba(0,0,0,0.45)] ${
-                isDark
-                  ? "bg-gradient-to-br from-white/10 via-neutral-900/70 to-white/10"
-                  : "bg-gradient-to-br from-white via-slate-100 to-white"
-              }`}
-            >
-              <div
-                className={`grid gap-10 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-12 border ${
-                  isDark
-                    ? "bg-neutral-950/80 border-neutral-800"
-                    : "bg-white/85 border-slate-200"
-                } backdrop-blur-2xl`}
-              >
-              <div>
-              <p
-                className={`text-xs font-semibold uppercase tracking-widest ${
-                  isDark ? "text-neutral-300" : "text-slate-500"
-                }`}
-              >
-                Build. Publish. Grow.
-              </p>
-              <h1 className="text-4xl md:text-5xl font-semibold mt-4 leading-tight">
-                Share your tech knowledge with clarity and style.
+      <section className="relative z-10 pt-16 pb-12">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+            <div className="animate-fade-in-up">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-border bg-secondary/50 mb-6">
+                <span className="w-2 h-2 rounded-full bg-accent"></span>
+                <span className="text-xs font-semibold text-foreground">
+                  Build. Publish. Grow.
+                </span>
+              </div>
+              <h1 className="text-5xl md:text-6xl font-bold leading-tight tracking-tight mb-6 text-balance">
+                Share your tech knowledge with clarity and style
               </h1>
-              <p
-                className={`mt-4 text-lg ${
-                  isDark ? "text-neutral-300" : "text-slate-600"
-                }`}
-              >
-                TechBlog is the calm, modern publishing space for developers
-                who want their writing to look as sharp as their ideas.
+              <p className="text-lg text-muted-foreground mb-8 max-w-xl leading-relaxed">
+                TechBlog is the modern publishing space for developers who want
+                their writing to look as sharp as their ideas. Beautiful, fast,
+                and designed for growth.
               </p>
 
-              <div className="flex flex-wrap gap-4 mt-8">
+              <div className="flex flex-wrap gap-4">
                 <button
                   onClick={handleStartWriting}
-                  className={`px-8 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 shadow-sm ${
-                    isDark
-                      ? "bg-white text-neutral-900 hover:bg-neutral-100"
-                      : "bg-neutral-900 text-white hover:bg-neutral-800"
-                  }`}
+                  className="px-8 py-3.5 rounded-lg font-semibold transition-all duration-300 inline-flex items-center gap-2 bg-primary text-primary-foreground hover:shadow-lg hover:shadow-accent/20 active:scale-95"
                 >
                   Start Writing <ArrowRight className="h-5 w-5" />
                 </button>
 
-                <button
-                  className={`px-8 py-3 rounded-lg font-semibold transition border ${
-                    isDark
-                      ? "border-neutral-700 text-neutral-200 hover:bg-white/10"
-                      : "border-slate-300 text-slate-700 hover:bg-white/70"
-                  }`}
-                >
+                <button className="px-8 py-3.5 rounded-lg font-semibold transition-all duration-300 border border-border bg-background text-foreground hover:bg-secondary active:scale-95">
                   Read Articles
                 </button>
               </div>
             </div>
 
-            <div className="grid gap-4">
-                <div
-                  className={`rounded-2xl p-6 shadow-sm border ${
-                    isDark
-                      ? "bg-neutral-900/70 text-neutral-200 border-neutral-800"
-                      : "bg-neutral-900 text-white border-neutral-900"
-                  }`}
-                >
-                  <p className="text-xs uppercase tracking-widest text-neutral-300">
-                    Featured Insight
+            <div
+              className="grid gap-4 animate-fade-in-down"
+              style={{ animationDelay: "0.1s" }}
+            >
+              <div
+                className={`rounded-2xl p-6 border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 ${
+                  isDark ? "bg-card border-border" : "bg-card border-border"
+                }`}
+              >
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-3">
+                  Featured Insight
                 </p>
-                <h3 className="text-xl font-semibold mt-3">
-                  Building a thoughtful developer blog in 2025
+                <h3 className="text-xl font-bold leading-tight mb-3">
+                  Building a thoughtful developer blog
                 </h3>
-                <p className="text-sm text-neutral-300 mt-3">
-                  A short guide to editorial clarity, visual polish, and
-                  sustainable writing habits.
+                <p className="text-sm text-muted-foreground">
+                  A guide to editorial clarity, visual polish, and sustainable
+                  writing habits for the modern developer.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div
-                  className={`rounded-2xl p-4 shadow-sm border transition hover:-translate-y-1 ${
-                    isDark
-                      ? "bg-neutral-950/70 border-neutral-800"
-                      : "bg-white/90 border-slate-200"
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
+                    isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
-                  <p
-                    className={`text-xs font-semibold uppercase ${
-                      isDark ? "text-neutral-300" : "text-slate-500"
-                    }`}
-                  >
-                    Active writers
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">
+                    Active Writers
                   </p>
-                  <p className="text-xl font-semibold mt-2">1.2k+</p>
+                  <p className="text-2xl font-bold">1.2k+</p>
                 </div>
                 <div
-                  className={`rounded-2xl p-4 shadow-sm border transition hover:-translate-y-1 ${
-                    isDark
-                      ? "bg-neutral-950/70 border-neutral-800"
-                      : "bg-white/90 border-slate-200"
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
+                    isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
-                  <p
-                    className={`text-xs font-semibold uppercase ${
-                      isDark ? "text-neutral-300" : "text-slate-500"
-                    }`}
-                  >
-                    Monthly reads
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">
+                    Monthly Reads
                   </p>
-                  <p className="text-xl font-semibold mt-2">48k</p>
+                  <p className="text-2xl font-bold">48k</p>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-16 relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-semibold mb-4">
+      <section className="py-20 relative z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4 text-balance">
               Why Choose TechBlog?
             </h2>
-            <p
-              className={`text-lg max-w-2xl mx-auto ${
-                isDark ? "text-neutral-300" : "text-slate-600"
-              }`}
-            >
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Everything you need to share your expertise and connect with the
-              tech community.
+              developer community.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div
-              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
-                isDark
-                  ? "bg-neutral-950/80 border-neutral-800"
-                  : "bg-white/80 border-slate-200"
-              } backdrop-blur-2xl`}
-            >
-              <Zap
-                className={`h-10 w-10 mb-4 ${
-                  isDark ? "text-neutral-300" : "text-slate-900"
-                }`}
-              />
-              <h3 className="text-xl font-semibold mb-3">Easy to Use</h3>
-              <p className={isDark ? "text-neutral-300" : "text-slate-600"}>
-                Intuitive editor and simple publishing process. Get your article
-                live in minutes, not hours.
-              </p>
-            </div>
-
-            <div
-              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
-                isDark
-                  ? "bg-neutral-950/80 border-neutral-800"
-                  : "bg-white/80 border-slate-200"
-              } backdrop-blur-2xl`}
-            >
-              <Users
-                className={`h-10 w-10 mb-4 ${
-                  isDark ? "text-neutral-300" : "text-slate-900"
-                }`}
-              />
-              <h3 className="text-xl font-semibold mb-3">
-                Grow Your Audience
-              </h3>
-              <p className={isDark ? "text-neutral-300" : "text-slate-600"}>
-                Reach thousands of tech enthusiasts. Build your personal brand
-                and establish thought leadership.
-              </p>
-            </div>
-
-            <div
-              className={`p-8 rounded-2xl hover:shadow-lg transition hover:-translate-y-1 border ${
-                isDark
-                  ? "bg-neutral-950/80 border-neutral-800"
-                  : "bg-white/80 border-slate-200"
-              } backdrop-blur-2xl`}
-            >
-              <Sparkles
-                className={`h-10 w-10 mb-4 ${
-                  isDark ? "text-neutral-300" : "text-slate-900"
-                }`}
-              />
-              <h3 className="text-xl font-semibold mb-3">
-                Professional Design
-              </h3>
-              <p className={isDark ? "text-neutral-300" : "text-slate-600"}>
-                Beautiful templates and responsive layouts. Your articles look
-                great on all devices.
-              </p>
-            </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: Zap,
+                title: "Easy to Use",
+                desc: "Intuitive editor and simple publishing process. Get your article live in minutes, not hours.",
+              },
+              {
+                icon: Users,
+                title: "Grow Your Audience",
+                desc: "Reach thousands of tech enthusiasts. Build your personal brand and establish thought leadership.",
+              },
+              {
+                icon: Sparkles,
+                title: "Professional Design",
+                desc: "Beautiful templates and responsive layouts. Your articles look great on all devices.",
+              },
+            ].map((feature, idx) => {
+              const Icon = feature.icon;
+              return (
+                <div
+                  key={idx}
+                  className={`p-8 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group cursor-pointer ${
+                    isDark
+                      ? "bg-card border-border hover:border-accent/50"
+                      : "bg-card border-border hover:border-accent/50"
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors duration-300">
+                    <Icon className="h-6 w-6 text-accent" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3">{feature.title}</h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Categories Section */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 relative z-10">
-        <h2 className="text-3xl md:text-4xl font-semibold mb-12 text-center">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+        <h2 className="text-4xl md:text-5xl font-bold mb-16 text-center text-balance">
           Explore Topics
         </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {["Development", "Design", "Technology", "Tutorial"].map(
-            (category) => (
+            (category, idx) => (
               <div
                 key={category}
-                className={`p-6 rounded-2xl shadow-sm hover:shadow-lg transition cursor-pointer hover:-translate-y-1 border ${
+                className={`p-6 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group ${
                   isDark
-                    ? "bg-neutral-950/80 border-neutral-800"
-                    : "bg-white/80 border-slate-200"
-                } backdrop-blur-2xl`}
+                    ? "bg-card border-border hover:border-accent/50"
+                    : "bg-card border-border hover:border-accent/50"
+                }`}
               >
-                <h3 className="text-lg font-semibold mb-2">{category}</h3>
-                <p
-                  className={
-                    isDark ? "text-neutral-300 text-sm" : "text-slate-600 text-sm"
-                  }
-                >
-                  Explore {category.toLowerCase()} articles
+                <div className="flex items-start justify-between mb-3">
+                  <h3 className="text-lg font-bold">{category}</h3>
+                  <ChevronRight className="h-5 w-5 text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Explore {category.toLowerCase()} content
                 </p>
               </div>
-            )
+            ),
           )}
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 relative z-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-24 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
-            className={`rounded-3xl p-[1px] ${
+            className={`rounded-2xl p-0.5 transition-all duration-300 ${
               isDark
-                ? "bg-gradient-to-r from-white/10 via-neutral-900/70 to-white/10"
-                : "bg-gradient-to-r from-white via-slate-100 to-white"
+                ? "bg-gradient-to-r from-accent/30 via-accent/10 to-accent/30"
+                : "bg-gradient-to-r from-accent/20 via-accent/10 to-accent/20"
             }`}
           >
-            <div className="bg-neutral-950/90 text-white rounded-3xl p-10 md:p-12 grid gap-6 md:grid-cols-[1.2fr_0.8fr] items-center">
+            <div
+              className={`rounded-2xl p-12 md:p-16 grid gap-8 md:grid-cols-[1.3fr_0.7fr] items-center ${
+                isDark
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-primary text-primary-foreground"
+              }`}
+            >
               <div>
-                <h2 className="text-3xl md:text-4xl font-semibold">
+                <h2 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-balance">
                   Ready to share your knowledge?
                 </h2>
-                <p className="text-neutral-300 mt-4 text-lg">
-                  Join hundreds of developers and tech enthusiasts who are
-                  already sharing their insights on TechBlog.
+                <p className="text-lg opacity-90">
+                  Join thousands of developers and tech enthusiasts already
+                  sharing their insights on TechBlog. Build your audience and
+                  establish your voice in the tech community.
                 </p>
               </div>
-              <div className="flex flex-wrap gap-4 md:justify-end">
+              <div className="flex flex-col gap-3 md:justify-end">
                 <button
                   onClick={handleStartWriting}
-                  className="bg-white text-neutral-900 px-8 py-3 rounded-lg font-semibold hover:bg-neutral-100 transition inline-flex items-center gap-2 shadow-sm"
+                  className="bg-accent text-accent-foreground px-8 py-3.5 rounded-lg font-bold hover:shadow-lg hover:shadow-accent/30 transition-all duration-300 inline-flex items-center justify-center gap-2 active:scale-95"
                 >
-                  Create Your First Post <ArrowRight className="h-5 w-5" />
+                  Start Writing <ArrowRight className="h-5 w-5" />
                 </button>
-                <button className="border border-white/30 text-white px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition">
+                <button className="border-2 border-white/30 text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-white/10 transition-all duration-300">
                   View Community
                 </button>
               </div>
@@ -452,40 +385,57 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gradient-to-b from-neutral-950 via-neutral-900 to-neutral-950 text-white mt-auto relative z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid md:grid-cols-4 gap-8">
+      <footer
+        className={`mt-auto relative z-10 ${isDark ? "bg-background border-t border-border" : "bg-background border-t border-border"}`}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 grid md:grid-cols-4 gap-12">
           <div>
-            <div className="flex items-center mb-4">
-              <div className="h-9 w-9 rounded-lg bg-neutral-300 text-neutral-900 flex items-center justify-center">
-                <BookOpen className="h-5 w-5" />
+            <div className="flex items-center gap-2.5 mb-4">
+              <div
+                className={`h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm ${isDark ? "bg-accent text-accent-foreground" : "bg-primary text-primary-foreground"}`}
+              >
+                TB
               </div>
-              <span className="ml-3 text-xl font-semibold">TechBlog</span>
+              <span className="text-lg font-bold">TechBlog</span>
             </div>
-            <p className="text-neutral-300">
-              Your daily dose of tech insights and tutorials.
+            <p className="text-muted-foreground text-sm leading-relaxed">
+              The modern platform for developers to share insights, build
+              audiences, and establish thought leadership in the tech community.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2 text-neutral-300">
+            <h3 className="font-bold mb-4 text-foreground">Quick Links</h3>
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Home
                 </a>
               </li>
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Articles
                 </a>
               </li>
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   About
                 </a>
               </li>
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Contact
                 </a>
               </li>
@@ -493,20 +443,29 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2 text-neutral-300">
+            <h3 className="font-bold mb-4 text-foreground">Topics</h3>
+            <ul className="space-y-2 text-muted-foreground text-sm">
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Development
                 </a>
               </li>
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Design
                 </a>
               </li>
               <li>
-                <a className="hover:text-white transition" href="#">
+                <a
+                  className="hover:text-accent transition-colors duration-300"
+                  href="#"
+                >
                   Technology
                 </a>
               </li>
@@ -514,17 +473,32 @@ export default function LandingPage() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Follow Us</h3>
-            <div className="flex gap-4">
-              <Github className="h-6 w-6 text-neutral-300 hover:text-white cursor-pointer transition" />
-              <Twitter className="h-6 w-6 text-neutral-300 hover:text-white cursor-pointer transition" />
-              <Linkedin className="h-6 w-6 text-neutral-300 hover:text-white cursor-pointer transition" />
+            <h3 className="font-bold mb-4 text-foreground">Follow Us</h3>
+            <div className="flex gap-3">
+              <a
+                href="#"
+                className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-secondary transition-all duration-300"
+              >
+                <Github className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-secondary transition-all duration-300"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
+              <a
+                href="#"
+                className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-muted-foreground hover:text-accent hover:bg-secondary transition-all duration-300"
+              >
+                <Linkedin className="h-5 w-5" />
+              </a>
             </div>
           </div>
         </div>
 
-        <div className="border-t border-neutral-700 mt-8 pt-8 text-center text-neutral-300">
-          <p>(c) 2025 TechBlog. All rights reserved.</p>
+        <div className="border-t border-border mt-12 pt-8 text-center text-muted-foreground text-sm">
+          <p>© 2025 TechBlog. All rights reserved.</p>
         </div>
       </footer>
     </div>
