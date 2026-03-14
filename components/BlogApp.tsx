@@ -275,11 +275,11 @@ const BlogApp: React.FC = () => {
               >
                 {isDark ? (
                   <>
-                    <Sun className="h-4 w-4" /> Light
+                    <Sun className="h-4 w-4" />
                   </>
                 ) : (
                   <>
-                    <Moon className="h-4 w-4" /> Dark
+                    <Moon className="h-4 w-4" />
                   </>
                 )}
               </button>
@@ -432,20 +432,20 @@ const BlogApp: React.FC = () => {
           <div className="flex gap-3 items-center">
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+              className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
                 isDark
-                  ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                  : "bg-slate-900 text-white hover:bg-slate-800"
+                  ? "bg-neutral-800 text-white hover:bg-slate-800"
+                  : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
               }`}
               aria-label="Toggle theme"
             >
               {isDark ? (
                 <>
-                  <Sun className="h-4 w-4" /> Light
+                  <Moon className="" />
                 </>
               ) : (
                 <>
-                  <Moon className="h-4 w-4" /> Dark
+                  <Sun className="" />
                 </>
               )}
             </button>
@@ -808,70 +808,70 @@ const BlogApp: React.FC = () => {
                 }
               />
 
-                <input
-                  type="text"
-                  placeholder="Excerpt"
-                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                    isDark
+              <input
+                type="text"
+                placeholder="Excerpt"
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                  isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
                     : "border-slate-200 focus:ring-slate-400"
                 }`}
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
-                    setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
-                  }
-                />
+                  setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
+                }
+              />
 
-                <div className="space-y-2">
-                  <div
-                    className={`text-xs font-semibold uppercase tracking-wide ${
-                      isDark ? "text-neutral-300" : "text-slate-600"
-                    }`}
-                  >
-                    Cover image
-                  </div>
-                  <input
-                    type="url"
-                    placeholder="Paste image URL (optional)"
-                    className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                      isDark
-                        ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                        : "border-slate-200 focus:ring-slate-400"
-                    }`}
-                    value={newBlog.image || ""}
-                    onChange={(e) =>
-                      setNewBlog((p) => ({ ...p, image: e.target.value }))
-                    }
-                  />
-                  <div
-                    className={`rounded-lg border overflow-hidden ${
-                      isDark
-                        ? "border-neutral-800 bg-neutral-900/70"
-                        : "border-slate-200 bg-slate-50"
-                    }`}
-                  >
-                    {newBlog.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={newBlog.image}
-                        alt="Cover preview"
-                        className="h-40 w-full object-cover"
-                      />
-                    ) : (
-                      <div
-                        className={`h-40 w-full flex items-center justify-center text-xs ${
-                          isDark ? "text-neutral-400" : "text-slate-500"
-                        }`}
-                      >
-                        Image preview appears here
-                      </div>
-                    )}
-                  </div>
+              <div className="space-y-2">
+                <div
+                  className={`text-xs font-semibold uppercase tracking-wide ${
+                    isDark ? "text-neutral-300" : "text-slate-600"
+                  }`}
+                >
+                  Cover image
                 </div>
-
-                <select
+                <input
+                  type="url"
+                  placeholder="Paste image URL (optional)"
                   className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
                     isDark
+                      ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
+                      : "border-slate-200 focus:ring-slate-400"
+                  }`}
+                  value={newBlog.image || ""}
+                  onChange={(e) =>
+                    setNewBlog((p) => ({ ...p, image: e.target.value }))
+                  }
+                />
+                <div
+                  className={`rounded-lg border overflow-hidden ${
+                    isDark
+                      ? "border-neutral-800 bg-neutral-900/70"
+                      : "border-slate-200 bg-slate-50"
+                  }`}
+                >
+                  {newBlog.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={newBlog.image}
+                      alt="Cover preview"
+                      className="h-40 w-full object-cover"
+                    />
+                  ) : (
+                    <div
+                      className={`h-40 w-full flex items-center justify-center text-xs ${
+                        isDark ? "text-neutral-400" : "text-slate-500"
+                      }`}
+                    >
+                      Image preview appears here
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <select
+                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                  isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
                     : "border-slate-200 focus:ring-slate-400"
                 }`}
