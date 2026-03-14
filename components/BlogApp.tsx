@@ -36,6 +36,7 @@ const BlogApp: React.FC = () => {
   const { data: session } = useSession();
 
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
@@ -71,6 +72,38 @@ const BlogApp: React.FC = () => {
   }, [theme]);
 
   const isDark = theme === "dark";
+  const fallbackAvatar = session?.user?.email
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        session.user.email,
+      )}&size=96&background=0f172a&color=ffffff`
+    : "";
+  const avatarSrc = profileImage || fallbackAvatar;
+
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      if (!session?.user?.email) {
+        setProfileImage(null);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/users/${encodeURIComponent(session.user.email)}`,
+        );
+        const data = await res.json();
+        if (data.success && data.user?.image) {
+          setProfileImage(data.user.image);
+          return;
+        }
+      } catch (err) {
+        console.error("Error loading profile image:", err);
+      }
+
+      setProfileImage(session.user.image ?? null);
+    };
+
+    loadProfileImage();
+  }, [session?.user?.email, session?.user?.image]);
 
   // Freeze editor content only once when modal opens
   useEffect(() => {
@@ -397,13 +430,20 @@ const BlogApp: React.FC = () => {
                 {session.user.email && (
                   <Link
                     href="/profile"
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
                       isDark
-                        ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                        ? "border-neutral-600 hover:border-neutral-400"
+                        : "border-slate-300 hover:border-slate-500"
                     }`}
+                    aria-label="Profile"
+                    title="Profile"
                   >
-                    Profile
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarSrc}
+                      alt={`${session.user.name || session.user.email} profile`}
+                      className="h-full w-full object-cover"
+                    />
                   </Link>
                 )}
                 <button
@@ -553,7 +593,7 @@ const BlogApp: React.FC = () => {
               Latest Stories
             </p>
             <h2 className="text-2xl md:text-3xl font-semibold mt-2">
-              Insights from the builders' desk
+              Insights from the builders&apos; desk
             </h2>
             <p
               className={`mt-2 max-w-2xl ${
