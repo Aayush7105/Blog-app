@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import {
   Bold,
   Italic,
@@ -31,6 +31,7 @@ export default function CustomEditor({
   const editorRef = useRef<HTMLDivElement | null>(null);
   const firstLoad = useRef(true);
   const savedRangeRef = useRef<Range | null>(null);
+  const [isBoldActive, setIsBoldActive] = useState(false);
 
   // set initial content only once
   useEffect(() => {
@@ -56,6 +57,14 @@ export default function CustomEditor({
     sel.addRange(range);
   };
 
+  const syncBoldState = () => {
+    try {
+      setIsBoldActive(document.queryCommandState("bold"));
+    } catch {
+      setIsBoldActive(false);
+    }
+  };
+
   // Ensures editor has focus and selection restored before executing
   const execCommandSafe = (cmd: string, val?: string | null) => {
     // focus editor
@@ -66,6 +75,7 @@ export default function CustomEditor({
     document.execCommand(cmd, false, val === null ? undefined : val);
     // after change, save selection again (so caret remains)
     saveSelection();
+    syncBoldState();
     // notify parent
     onChange(editorRef.current?.innerHTML || "");
   };
@@ -74,6 +84,7 @@ export default function CustomEditor({
   const handleInput = () => {
     // update saved selection on input
     saveSelection();
+    syncBoldState();
     onChange(editorRef.current?.innerHTML || "");
   };
 
@@ -92,6 +103,7 @@ export default function CustomEditor({
 
         <IconBtn
           ariaLabel="Bold"
+          isActive={isBoldActive}
           onMouseDown={(e) => e.preventDefault()}
           onClick={() => execCommandSafe("bold")}
         >
@@ -184,8 +196,16 @@ export default function CustomEditor({
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
-        onKeyUp={saveSelection}
-        onMouseUp={saveSelection}
+        onKeyUp={() => {
+          saveSelection();
+          syncBoldState();
+        }}
+        onMouseUp={() => {
+          saveSelection();
+          syncBoldState();
+        }}
+        onFocus={syncBoldState}
+        onBlur={() => setIsBoldActive(false)}
         className="min-h-[200px] p-4 border border-neutral-300 rounded-lg bg-white shadow-sm text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-100 dark:focus:ring-neutral-600"
       />
     </div>
@@ -225,19 +245,24 @@ function IconBtn({
   onClick,
   onMouseDown,
   ariaLabel,
+  isActive = false,
 }: {
   children: React.ReactNode;
   onClick: () => void;
   onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   ariaLabel?: string;
+  isActive?: boolean;
 }) {
   return (
     <button
       type="button"
       aria-label={ariaLabel}
+      aria-pressed={isActive}
       onMouseDown={onMouseDown}
       onClick={onClick}
-      className="p-1.5 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
+      className={`p-1.5 rounded-md transition hover:bg-neutral-200 dark:hover:bg-neutral-700 ${
+        isActive ? "bg-neutral-200 dark:bg-neutral-700" : ""
+      }`}
     >
       {children}
     </button>
