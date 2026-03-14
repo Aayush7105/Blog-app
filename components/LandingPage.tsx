@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -26,6 +26,8 @@ export default function LandingPage() {
   const router = useRouter();
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [userPosts, setUserPosts] = useState<
     {
       _id: string;
@@ -90,6 +92,7 @@ export default function LandingPage() {
     const loadProfileImage = async () => {
       if (!session?.user?.email) {
         setProfileImage(null);
+        setIsProfileMenuOpen(false);
         return;
       }
 
@@ -111,6 +114,28 @@ export default function LandingPage() {
 
     loadProfileImage();
   }, [session?.user?.email, session?.user?.image]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   const isDark = theme === "dark";
   const fallbackAvatar = session?.user?.email
@@ -178,23 +203,66 @@ export default function LandingPage() {
 
             <div className="flex items-center gap-2">
               {session?.user?.email && (
-                <Link
-                  href="/profile"
-                  className={`h-10 w-10 rounded-full overflow-hidden border transition duration-300 inline-flex items-center justify-center ${
-                    isDark
-                      ? "border-border hover:border-accent/40"
-                      : "border-border hover:border-accent/40"
-                  }`}
-                  aria-label="Profile"
-                  title="Profile"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={avatarSrc}
-                    alt={`${session.user.name || session.user.email} profile`}
-                    className="h-full w-full object-cover"
-                  />
-                </Link>
+                <div className="relative" ref={profileMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                    className={`h-10 w-10 rounded-full overflow-hidden border transition duration-300 inline-flex items-center justify-center ${
+                      isDark
+                        ? "border-border hover:border-accent/40"
+                        : "border-border hover:border-accent/40"
+                    }`}
+                    aria-label="Open profile menu"
+                    aria-haspopup="menu"
+                    aria-expanded={isProfileMenuOpen}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarSrc}
+                      alt={`${session.user.name || session.user.email} profile`}
+                      className="h-full w-full object-cover"
+                    />
+                  </button>
+
+                  {isProfileMenuOpen && (
+                    <div
+                      className={`absolute right-0 mt-2 w-40 rounded-lg border shadow-lg overflow-hidden ${
+                        isDark
+                          ? "bg-card border-border"
+                          : "bg-card border-border"
+                      }`}
+                      role="menu"
+                    >
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                        className={`block px-4 py-2 text-sm transition ${
+                          isDark
+                            ? "text-foreground hover:bg-secondary"
+                            : "text-foreground hover:bg-secondary"
+                        }`}
+                        role="menuitem"
+                      >
+                        Profile
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileMenuOpen(false);
+                          signOut();
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm transition ${
+                          isDark
+                            ? "text-foreground hover:bg-secondary"
+                            : "text-foreground hover:bg-secondary"
+                        }`}
+                        role="menuitem"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
               <button
                 onClick={() => setTheme(isDark ? "light" : "dark")}

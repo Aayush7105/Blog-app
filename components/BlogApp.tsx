@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   BookOpen,
@@ -37,6 +37,8 @@ const BlogApp: React.FC = () => {
 
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
@@ -83,6 +85,7 @@ const BlogApp: React.FC = () => {
     const loadProfileImage = async () => {
       if (!session?.user?.email) {
         setProfileImage(null);
+        setIsProfileMenuOpen(false);
         return;
       }
 
@@ -104,6 +107,28 @@ const BlogApp: React.FC = () => {
 
     loadProfileImage();
   }, [session?.user?.email, session?.user?.image]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!profileMenuRef.current?.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   // Freeze editor content only once when modal opens
   useEffect(() => {
@@ -428,34 +453,79 @@ const BlogApp: React.FC = () => {
             {session?.user ? (
               <>
                 {session.user.email && (
-                  <Link
-                    href="/profile"
-                    className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
-                      isDark
-                        ? "border-neutral-600 hover:border-neutral-400"
-                        : "border-slate-300 hover:border-slate-500"
-                    }`}
-                    aria-label="Profile"
-                    title="Profile"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={avatarSrc}
-                      alt={`${session.user.name || session.user.email} profile`}
-                      className="h-full w-full object-cover"
-                    />
-                  </Link>
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      type="button"
+                      onClick={() => setIsProfileMenuOpen((prev) => !prev)}
+                      className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
+                        isDark
+                          ? "border-neutral-600 hover:border-neutral-400"
+                          : "border-slate-300 hover:border-slate-500"
+                      }`}
+                      aria-label="Open profile menu"
+                      aria-haspopup="menu"
+                      aria-expanded={isProfileMenuOpen}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={avatarSrc}
+                        alt={`${session.user.name || session.user.email} profile`}
+                        className="h-full w-full object-cover"
+                      />
+                    </button>
+
+                    {isProfileMenuOpen && (
+                      <div
+                        className={`absolute right-0 mt-2 w-40 rounded-lg border shadow-lg overflow-hidden z-50 ${
+                          isDark
+                            ? "bg-neutral-900 border-neutral-700"
+                            : "bg-white border-slate-200"
+                        }`}
+                        role="menu"
+                      >
+                        <Link
+                          href="/profile"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                          className={`block px-4 py-2 text-sm transition ${
+                            isDark
+                              ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                          }`}
+                          role="menuitem"
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            signOut();
+                          }}
+                          className={`w-full text-left px-4 py-2 text-sm transition ${
+                            isDark
+                              ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                          }`}
+                          role="menuitem"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
-                <button
-                  onClick={() => signOut()}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    isDark
-                      ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                      : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
-                  }`}
-                >
-                  Sign Out
-                </button>
+                {!session.user.email && (
+                  <button
+                    onClick={() => signOut()}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                      isDark
+                        ? "text-neutral-300 hover:text-white hover:bg-white/10"
+                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    }`}
+                  >
+                    Sign Out
+                  </button>
+                )}
                 <button
                   onClick={() => setIsAddModalOpen(true)}
                   className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition ${
