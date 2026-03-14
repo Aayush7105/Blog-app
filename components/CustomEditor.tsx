@@ -84,6 +84,7 @@ export default function CustomEditor({
         className="
           flex flex-wrap items-center gap-2 mb-3 px-3 py-2
           bg-white border border-neutral-300 rounded-lg shadow-sm
+          dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100
         "
       >
         {/* Heads-up: onMouseDown prevents toolbar click from blurring editor */}
@@ -121,7 +122,7 @@ export default function CustomEditor({
           <Strikethrough size={16} />
         </IconBtn>
 
-        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
+        <div className="w-[1px] h-6 bg-neutral-200 dark:bg-neutral-700 mx-1" />
 
         <IconBtn
           ariaLabel="Code block"
@@ -139,7 +140,7 @@ export default function CustomEditor({
           <Quote size={16} />
         </IconBtn>
 
-        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
+        <div className="w-[1px] h-6 bg-neutral-200 dark:bg-neutral-700 mx-1" />
 
         {/* LISTS: works because we prevent blur and restore selection */}
         <IconBtn
@@ -158,7 +159,7 @@ export default function CustomEditor({
           <ListOrdered size={16} />
         </IconBtn>
 
-        <div className="w-[1px] h-6 bg-neutral-200 mx-1" />
+        <div className="w-[1px] h-6 bg-neutral-200 dark:bg-neutral-700 mx-1" />
 
         <IconBtn
           ariaLabel="Undo"
@@ -185,7 +186,7 @@ export default function CustomEditor({
         onInput={handleInput}
         onKeyUp={saveSelection}
         onMouseUp={saveSelection}
-        className="min-h-[200px] p-4 border border-neutral-300 rounded-lg bg-white shadow-sm text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-300"
+        className="min-h-[200px] p-4 border border-neutral-300 rounded-lg bg-white shadow-sm text-[15px] leading-relaxed focus:outline-none focus:ring-2 focus:ring-neutral-300 dark:bg-neutral-950 dark:border-neutral-700 dark:text-neutral-100 dark:focus:ring-neutral-600"
       />
     </div>
   );
@@ -206,7 +207,7 @@ function SelectHeading({
         // reset to P after applying to avoid accidental repeated changes
         (e.target as HTMLSelectElement).value = "P";
       }}
-      className="border border-neutral-200 px-2 py-1 rounded text-sm"
+      className="border border-neutral-200 px-2 py-1 rounded text-sm bg-white text-neutral-800 dark:bg-neutral-900 dark:border-neutral-700 dark:text-neutral-100"
       aria-label="Heading"
       defaultValue="P"
     >
@@ -236,7 +237,7 @@ function IconBtn({
       aria-label={ariaLabel}
       onMouseDown={onMouseDown}
       onClick={onClick}
-      className="p-1.5 rounded-md hover:bg-neutral-200 transition"
+      className="p-1.5 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 transition"
     >
       {children}
     </button>

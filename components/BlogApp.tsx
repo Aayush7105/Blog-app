@@ -167,6 +167,15 @@ const BlogApp: React.FC = () => {
       : blogPosts.filter((p) => p.category === selectedCategory);
 
   const featuredPost = blogPosts[0];
+  const modalInputClass = `w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 ${
+    isDark
+      ? "border-neutral-700 bg-neutral-950/70 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
+      : "border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-neutral-300"
+  }`;
+  const modalLabelClass = `text-xs font-semibold uppercase tracking-wide ${
+    isDark ? "text-neutral-400" : "text-neutral-600"
+  }`;
+  const modalHintClass = `text-xs ${isDark ? "text-neutral-500" : "text-neutral-500"}`;
 
   // Add Blog
   const handleAddBlog = useCallback(async () => {
@@ -790,151 +799,195 @@ const BlogApp: React.FC = () => {
 
       {/* Add Blog Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md ${
+            isDark ? "bg-neutral-950/75" : "bg-neutral-900/40"
+          }`}
+        >
           <div
-            className={`p-6 rounded-2xl w-full max-w-xl shadow-xl border ${
+            className={`w-full max-w-2xl rounded-3xl p-[1px] shadow-2xl ${
               isDark
-                ? "bg-neutral-900 border-neutral-700 text-neutral-300"
-                : "bg-white border-neutral-200"
+                ? "bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-900"
+                : "bg-gradient-to-br from-neutral-200 via-neutral-300 to-neutral-200"
             }`}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">Add New Blog</h2>
-              <button
-                className={`text-sm ${
-                  isDark
-                    ? "text-neutral-300 hover:text-neutral-300"
-                    : "text-neutral-500 hover:text-neutral-700"
-                }`}
-                onClick={() => setIsAddModalOpen(false)}
-              >
-                Close
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <input
-                type="text"
-                placeholder="Title"
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                  isDark
-                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-neutral-200 focus:ring-neutral-400"
-                }`}
-                value={newBlog.title || ""}
-                onChange={(e) =>
-                  setNewBlog((p) => ({ ...p, title: e.target.value }))
-                }
-              />
-
-              <input
-                type="text"
-                placeholder="Excerpt"
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                  isDark
-                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-neutral-200 focus:ring-neutral-400"
-                }`}
-                value={newBlog.excerpt || ""}
-                onChange={(e) =>
-                  setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
-                }
-              />
-
-              <div className="space-y-2">
-                <div
-                  className={`text-xs font-semibold uppercase tracking-wide ${
-                    isDark ? "text-neutral-300" : "text-neutral-600"
-                  }`}
-                >
-                  Cover image
+            <div
+              className={`max-h-[90vh] overflow-y-auto rounded-3xl border p-6 md:p-7 ${
+                isDark
+                  ? "border-neutral-700 bg-neutral-900/95 text-neutral-100"
+                  : "border-neutral-200 bg-white/95 text-neutral-900"
+              }`}
+            >
+              <div className="mb-6 flex items-start justify-between gap-4">
+                <div>
+                  <p
+                    className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                      isDark ? "text-neutral-400" : "text-neutral-500"
+                    }`}
+                  >
+                    Editor Workspace
+                  </p>
+                  <h2 className="mt-2 text-2xl font-semibold">
+                    Create a new blog
+                  </h2>
+                  <p
+                    className={`mt-1 text-sm ${
+                      isDark ? "text-neutral-400" : "text-neutral-600"
+                    }`}
+                  >
+                    Give your post a title, strong excerpt, and polished cover.
+                  </p>
                 </div>
-                <input
-                  type="url"
-                  placeholder="Paste image URL (optional)"
-                  className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
+                <button
+                  type="button"
+                  className={`h-9 w-9 rounded-full border text-sm font-semibold transition ${
                     isDark
-                      ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                      : "border-neutral-200 focus:ring-neutral-400"
+                      ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
+                      : "border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
-                  value={newBlog.image || ""}
-                  onChange={(e) =>
-                    setNewBlog((p) => ({ ...p, image: e.target.value }))
-                  }
-                />
+                  onClick={() => setIsAddModalOpen(false)}
+                  aria-label="Close add blog modal"
+                >
+                  X
+                </button>
+              </div>
+
+              <div className="space-y-5">
+                <div className="space-y-2">
+                  <label className={modalLabelClass} htmlFor="blog-title">
+                    Title *
+                  </label>
+                  <input
+                    id="blog-title"
+                    type="text"
+                    placeholder="A concise title your readers will remember"
+                    className={modalInputClass}
+                    value={newBlog.title || ""}
+                    onChange={(e) =>
+                      setNewBlog((p) => ({ ...p, title: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={modalLabelClass} htmlFor="blog-excerpt">
+                    Excerpt *
+                  </label>
+                  <input
+                    id="blog-excerpt"
+                    type="text"
+                    placeholder="One or two lines that hook the reader"
+                    className={modalInputClass}
+                    value={newBlog.excerpt || ""}
+                    onChange={(e) =>
+                      setNewBlog((p) => ({ ...p, excerpt: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className={modalLabelClass} htmlFor="blog-image">
+                    Cover image
+                  </label>
+                  <p className={modalHintClass}>
+                    Optional. Add a URL for a thumbnail preview.
+                  </p>
+                  <input
+                    id="blog-image"
+                    type="url"
+                    placeholder="https://example.com/cover.jpg"
+                    className={modalInputClass}
+                    value={newBlog.image || ""}
+                    onChange={(e) =>
+                      setNewBlog((p) => ({ ...p, image: e.target.value }))
+                    }
+                  />
+                  <div
+                    className={`overflow-hidden rounded-2xl border ${
+                      isDark
+                        ? "border-neutral-800 bg-neutral-950/60"
+                        : "border-neutral-200 bg-neutral-50"
+                    }`}
+                  >
+                    {newBlog.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={newBlog.image}
+                        alt="Cover preview"
+                        className="h-44 w-full object-cover"
+                      />
+                    ) : (
+                      <div
+                        className={`h-44 w-full flex items-center justify-center text-xs ${
+                          isDark ? "text-neutral-500" : "text-neutral-500"
+                        }`}
+                      >
+                        Cover preview appears here
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className={modalLabelClass} htmlFor="blog-category">
+                    Category *
+                  </label>
+                  <select
+                    id="blog-category"
+                    className={modalInputClass}
+                    value={newBlog.category || ""}
+                    onChange={(e) =>
+                      setNewBlog((p) => ({ ...p, category: e.target.value }))
+                    }
+                  >
+                    <option value="">Select Category</option>
+                    {categories
+                      .filter((c) => c !== "All")
+                      .map((c) => (
+                        <option key={c}>{c}</option>
+                      ))}
+                  </select>
+                </div>
+
                 <div
-                  className={`rounded-lg border overflow-hidden ${
+                  className={`rounded-2xl border p-3 ${
                     isDark
-                      ? "border-neutral-800 bg-neutral-900/70"
-                      : "border-neutral-200 bg-neutral-50"
+                      ? "border-neutral-700 bg-neutral-950/50"
+                      : "border-neutral-200 bg-neutral-50/80"
                   }`}
                 >
-                  {newBlog.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={newBlog.image}
-                      alt="Cover preview"
-                      className="h-40 w-full object-cover"
+                  <p className={modalLabelClass}>Content *</p>
+                  <div className="mt-2">
+                    <CustomEditor
+                      value={frozenInitialContent}
+                      onChange={handleEditorChange}
                     />
-                  ) : (
-                    <div
-                      className={`h-40 w-full flex items-center justify-center text-xs ${
-                        isDark ? "text-neutral-400" : "text-neutral-500"
-                      }`}
-                    >
-                      Image preview appears here
-                    </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
-              <select
-                className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
-                  isDark
-                    ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-neutral-200 focus:ring-neutral-400"
-                }`}
-                value={newBlog.category || ""}
-                onChange={(e) =>
-                  setNewBlog((p) => ({ ...p, category: e.target.value }))
-                }
-              >
-                <option value="">Select Category</option>
-                {categories
-                  .filter((c) => c !== "All")
-                  .map((c) => (
-                    <option key={c}>{c}</option>
-                  ))}
-              </select>
-
-              {/* Fixed editor */}
-              <CustomEditor
-                value={frozenInitialContent}
-                onChange={handleEditorChange}
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  isDark
-                    ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                    : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
-                }`}
-                onClick={() => setIsAddModalOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  isDark
-                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                    : "bg-neutral-900 text-white hover:bg-neutral-800"
-                }`}
-                onClick={handleAddBlog}
-              >
-                Add Blog
-              </button>
+              <div className="mt-7 flex items-center justify-end gap-3">
+                <button
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    isDark
+                      ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                      : "border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
+                  }`}
+                  onClick={() => setIsAddModalOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={`rounded-xl px-5 py-2 text-sm font-semibold transition ${
+                    isDark
+                      ? "bg-white text-neutral-900 hover:bg-neutral-200"
+                      : "bg-neutral-900 text-white hover:bg-neutral-800"
+                  }`}
+                  onClick={handleAddBlog}
+                >
+                  Publish Blog
+                </button>
+              </div>
             </div>
           </div>
         </div>
