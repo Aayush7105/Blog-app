@@ -266,17 +266,21 @@ export default function LandingPage() {
               )}
               <button
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition duration-300 border ${
+                className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
                   isDark
-                    ? "border-border bg-secondary hover:bg-secondary text-foreground"
-                    : "border-border bg-secondary hover:bg-secondary text-foreground"
+                    ? "bg-neutral-800 text-white hover:bg-slate-800"
+                    : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
                 }`}
                 aria-label="Toggle theme"
               >
                 {isDark ? (
-                  <Sun className="h-4 w-4" />
+                  <>
+                    <Moon className="" />
+                  </>
                 ) : (
-                  <Moon className="h-4 w-4" />
+                  <>
+                    <Sun className="" />
+                  </>
                 )}
               </button>
             </div>
@@ -340,7 +344,7 @@ export default function LandingPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div
-                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-tranneutral-y-1 ${
                     isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
@@ -350,7 +354,7 @@ export default function LandingPage() {
                   <p className="text-2xl font-bold">1.2k+</p>
                 </div>
                 <div
-                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-tranneutral-y-1 ${
                     isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
@@ -400,7 +404,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={idx}
-                  className={`p-8 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group cursor-pointer ${
+                  className={`p-8 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-tranneutral-y-1 group cursor-pointer ${
                     isDark
                       ? "bg-card border-border hover:border-accent/50"
                       : "bg-card border-border hover:border-accent/50"
@@ -430,7 +434,7 @@ export default function LandingPage() {
             (category, idx) => (
               <div
                 key={category}
-                className={`p-6 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group ${
+                className={`p-6 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-accent/10 hover:-tranneutral-y-1 group ${
                   isDark
                     ? "bg-card border-border hover:border-accent/50"
                     : "bg-card border-border hover:border-accent/50"

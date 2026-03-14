@@ -67,7 +67,9 @@ export default function ProfilePage({ email }: { email: string }) {
           setProfile(userData.user);
         }
 
-        const res = await fetch(`/api/blogs/author/${encodeURIComponent(email)}`);
+        const res = await fetch(
+          `/api/blogs/author/${encodeURIComponent(email)}`,
+        );
         const data = await res.json();
         if (data.success) {
           setPosts(data.posts);
@@ -128,22 +130,28 @@ export default function ProfilePage({ email }: { email: string }) {
             <div className="h-9 w-9 rounded-lg flex items-center justify-center bg-primary text-primary-foreground">
               <BookOpen className="h-5 w-5" />
             </div>
-            <span className="text-xl font-semibold tracking-tight">TechBlog</span>
+            <span className="text-xl font-semibold tracking-tight">
+              TechBlog
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={() => setTheme(isDark ? "light" : "dark")}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition border border-border bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
+                isDark
+                  ? "bg-neutral-800 text-white hover:bg-slate-800"
+                  : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
+              }`}
               aria-label="Toggle theme"
             >
               {isDark ? (
                 <>
-                  <Sun className="h-4 w-4" /> Light
+                  <Moon className="" />
                 </>
               ) : (
                 <>
-                  <Moon className="h-4 w-4" /> Dark
+                  <Sun className="" />
                 </>
               )}
             </button>
@@ -216,7 +224,9 @@ export default function ProfilePage({ email }: { email: string }) {
                           {stat.label}
                         </p>
                       </div>
-                      <p className="mt-2 text-2xl font-semibold">{stat.value}</p>
+                      <p className="mt-2 text-2xl font-semibold">
+                        {stat.value}
+                      </p>
                     </div>
                   );
                 })}
@@ -269,7 +279,7 @@ export default function ProfilePage({ email }: { email: string }) {
               posts.map((post) => (
                 <article
                   key={post._id}
-                  className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 border border-border bg-card hover:-translate-y-1"
+                  className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 border border-border bg-card hover:-tranneutral-y-1"
                 >
                   <div className="relative aspect-[16/10] bg-secondary">
                     {post.image ? (

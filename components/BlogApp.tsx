@@ -238,14 +238,14 @@ const BlogApp: React.FC = () => {
         className={
           isDark
             ? "min-h-screen bg-neutral-900 text-neutral-300"
-            : "min-h-screen bg-slate-50 text-slate-900"
+            : "min-h-screen bg-neutral-50 text-neutral-900"
         }
       >
         <nav
           className={`sticky top-0 z-50 border-b ${
             isDark
               ? "bg-neutral-900/80 border-neutral-700"
-              : "bg-white/80 border-slate-200"
+              : "bg-white/80 border-neutral-200"
           } backdrop-blur`}
         >
           <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
@@ -254,7 +254,7 @@ const BlogApp: React.FC = () => {
                 className={`h-9 w-9 rounded-lg flex items-center justify-center ${
                   isDark
                     ? "bg-neutral-300 text-neutral-900"
-                    : "bg-slate-900 text-white"
+                    : "bg-neutral-900 text-white"
                 }`}
               >
                 <BookOpen className="h-5 w-5" />
@@ -266,20 +266,20 @@ const BlogApp: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setTheme(isDark ? "light" : "dark")}
-                className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold transition ${
+                className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
                   isDark
-                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
+                    ? "bg-neutral-800 text-white hover:bg-slate-800"
+                    : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
                 }`}
                 aria-label="Toggle theme"
               >
                 {isDark ? (
                   <>
-                    <Sun className="h-4 w-4" />
+                    <Moon className="" />
                   </>
                 ) : (
                   <>
-                    <Moon className="h-4 w-4" />
+                    <Sun className="" />
                   </>
                 )}
               </button>
@@ -288,7 +288,7 @@ const BlogApp: React.FC = () => {
                 className={`text-sm font-medium ${
                   isDark
                     ? "text-neutral-300 hover:text-white"
-                    : "text-slate-700 hover:text-slate-900"
+                    : "text-neutral-700 hover:text-neutral-900"
                 }`}
               >
                 Back to all posts
@@ -303,7 +303,7 @@ const BlogApp: React.FC = () => {
             className={`inline-flex items-center text-sm font-medium mb-6 ${
               isDark
                 ? "text-neutral-300 hover:text-white"
-                : "text-slate-600 hover:text-slate-900"
+                : "text-neutral-600 hover:text-neutral-900"
             }`}
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
@@ -313,12 +313,12 @@ const BlogApp: React.FC = () => {
             className={`rounded-2xl overflow-hidden shadow-sm border ${
               isDark
                 ? "bg-neutral-900/70 border-neutral-700"
-                : "bg-white border-slate-200"
+                : "bg-white border-neutral-200"
             }`}
           >
             <div
               className={`aspect-[16/9] ${
-                isDark ? "bg-neutral-700" : "bg-slate-100"
+                isDark ? "bg-neutral-700" : "bg-neutral-100"
               }`}
             >
               {selectedPost.image && (
@@ -336,7 +336,7 @@ const BlogApp: React.FC = () => {
                 className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                   isDark
                     ? "text-neutral-900 bg-neutral-300"
-                    : "text-slate-500 bg-slate-100"
+                    : "text-neutral-500 bg-neutral-100"
                 }`}
               >
                 {selectedPost.category}
@@ -348,7 +348,7 @@ const BlogApp: React.FC = () => {
 
               <div
                 className={`flex flex-wrap items-center gap-4 text-sm mt-4 ${
-                  isDark ? "text-neutral-300" : "text-slate-600"
+                  isDark ? "text-neutral-300" : "text-neutral-600"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -359,7 +359,7 @@ const BlogApp: React.FC = () => {
                         selectedPost.authorEmail,
                       )}`}
                       className={
-                        isDark ? "hover:text-white" : "hover:text-slate-900"
+                        isDark ? "hover:text-white" : "hover:text-neutral-900"
                       }
                     >
                       {selectedPost.author}
@@ -402,7 +402,7 @@ const BlogApp: React.FC = () => {
       className={
         isDark
           ? "min-h-screen bg-neutral-900 text-neutral-300 flex flex-col"
-          : "min-h-screen bg-slate-50 text-slate-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#e2e8f0,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%)]"
+          : "min-h-screen bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#e2e8f0,transparent_55%),radial-gradient(900px_circle_at_80%_-15%,#e5e7eb,transparent_50%)]"
       }
     >
       {/* Navbar */}
@@ -410,7 +410,7 @@ const BlogApp: React.FC = () => {
         className={`sticky top-0 z-50 border-b ${
           isDark
             ? "bg-neutral-900/80 border-neutral-700"
-            : "bg-white/80 border-slate-200"
+            : "bg-white/80 border-neutral-200"
         } backdrop-blur`}
       >
         <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4">
@@ -419,7 +419,7 @@ const BlogApp: React.FC = () => {
               className={`h-9 w-9 rounded-lg flex items-center justify-center ${
                 isDark
                   ? "bg-neutral-300 text-neutral-900"
-                  : "bg-slate-900 text-white"
+                  : "bg-neutral-900 text-white"
               }`}
             >
               <BookOpen className="h-5 w-5" />
@@ -430,29 +430,38 @@ const BlogApp: React.FC = () => {
           </div>
 
           <div className="flex gap-3 items-center">
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
-                isDark
-                  ? "bg-neutral-800 text-white hover:bg-slate-800"
-                  : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
-              }`}
-              aria-label="Toggle theme"
-            >
-              {isDark ? (
-                <>
-                  <Moon className="" />
-                </>
-              ) : (
-                <>
-                  <Sun className="" />
-                </>
-              )}
-            </button>
-
             {session?.user ? (
               <>
-                {session.user.email && (
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition ${
+                    isDark
+                      ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                      : "bg-neutral-900 text-white hover:bg-neutral-800"
+                  }`}
+                >
+                  <Plus className="h-4 w-4" /> Add Blog
+                </button>
+                <button
+                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
+                    isDark
+                      ? "bg-neutral-800 text-white hover:bg-neutral-800"
+                      : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
+                  }`}
+                  aria-label="Toggle theme"
+                >
+                  {isDark ? (
+                    <>
+                      <Moon className="" />
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="" />
+                    </>
+                  )}
+                </button>
+                {session.user.email ? (
                   <div className="relative" ref={profileMenuRef}>
                     <button
                       type="button"
@@ -460,7 +469,7 @@ const BlogApp: React.FC = () => {
                       className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
                         isDark
                           ? "border-neutral-600 hover:border-neutral-400"
-                          : "border-slate-300 hover:border-slate-500"
+                          : "border-neutral-300 hover:border-neutral-500"
                       }`}
                       aria-label="Open profile menu"
                       aria-haspopup="menu"
@@ -479,7 +488,7 @@ const BlogApp: React.FC = () => {
                         className={`absolute right-0 mt-2 w-40 rounded-lg border shadow-lg overflow-hidden z-50 ${
                           isDark
                             ? "bg-neutral-900 border-neutral-700"
-                            : "bg-white border-slate-200"
+                            : "bg-white border-neutral-200"
                         }`}
                         role="menu"
                       >
@@ -489,7 +498,7 @@ const BlogApp: React.FC = () => {
                           className={`block px-4 py-2 text-sm transition ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
                           }`}
                           role="menuitem"
                         >
@@ -504,7 +513,7 @@ const BlogApp: React.FC = () => {
                           className={`w-full text-left px-4 py-2 text-sm transition ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                              : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
                           }`}
                           role="menuitem"
                         >
@@ -513,41 +522,51 @@ const BlogApp: React.FC = () => {
                       </div>
                     )}
                   </div>
-                )}
-                {!session.user.email && (
+                ) : (
                   <button
                     onClick={() => signOut()}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
                       isDark
                         ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                        : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                        : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
                     }`}
                   >
                     Sign Out
                   </button>
                 )}
-                <button
-                  onClick={() => setIsAddModalOpen(true)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition ${
-                    isDark
-                      ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                      : "bg-slate-900 text-white hover:bg-slate-800"
-                  }`}
-                >
-                  <Plus className="h-4 w-4" /> Add Blog
-                </button>
               </>
             ) : (
-              <button
-                onClick={() => signIn("google")}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                  isDark
-                    ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
-                }`}
-              >
-                Sign in
-              </button>
+              <>
+                <button
+                  onClick={() => setTheme(isDark ? "light" : "dark")}
+                  className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
+                    isDark
+                      ? "bg-neutral-800 text-white hover:bg-slate-800"
+                      : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
+                  }`}
+                  aria-label="Toggle theme"
+                >
+                  {isDark ? (
+                    <>
+                      <Moon className="" />
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="" />
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => signIn("google")}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    isDark
+                      ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
+                      : "bg-neutral-900 text-white hover:bg-neutral-800"
+                  }`}
+                >
+                  Sign in
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -561,7 +580,7 @@ const BlogApp: React.FC = () => {
               className={`grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 shadow-sm border ${
                 isDark
                   ? "bg-neutral-900/70 border-neutral-700"
-                  : "bg-white/80 border-slate-200"
+                  : "bg-white/80 border-neutral-200"
               } backdrop-blur`}
             >
               <div>
@@ -569,7 +588,7 @@ const BlogApp: React.FC = () => {
                   className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                     isDark
                       ? "text-neutral-900 bg-neutral-300"
-                      : "text-slate-600 bg-slate-100"
+                      : "text-neutral-600 bg-neutral-100"
                   }`}
                 >
                   Weekly Digest
@@ -578,13 +597,13 @@ const BlogApp: React.FC = () => {
                   {featuredPost.title}
                 </h1>
                 <p
-                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-slate-600"}`}
+                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-neutral-600"}`}
                 >
                   {featuredPost.excerpt}
                 </p>
                 <div
                   className={`mt-6 flex flex-wrap items-center gap-4 text-sm ${
-                    isDark ? "text-neutral-300" : "text-slate-500"
+                    isDark ? "text-neutral-300" : "text-neutral-500"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -595,7 +614,7 @@ const BlogApp: React.FC = () => {
                           featuredPost.authorEmail,
                         )}`}
                         className={
-                          isDark ? "hover:text-white" : "hover:text-slate-900"
+                          isDark ? "hover:text-white" : "hover:text-neutral-900"
                         }
                       >
                         {featuredPost.author}
@@ -614,7 +633,7 @@ const BlogApp: React.FC = () => {
                     className={`inline-flex items-center px-6 py-3 rounded-lg text-sm font-semibold transition ${
                       isDark
                         ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                        : "bg-slate-900 text-white hover:bg-slate-800"
+                        : "bg-neutral-900 text-white hover:bg-neutral-800"
                     }`}
                   >
                     Read the feature
@@ -623,7 +642,7 @@ const BlogApp: React.FC = () => {
                     className={`inline-flex items-center px-6 py-3 rounded-lg border text-sm font-semibold transition ${
                       isDark
                         ? "border-neutral-700 text-neutral-300 hover:bg-white/10"
-                        : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                        : "border-neutral-300 text-neutral-700 hover:bg-neutral-100"
                     }`}
                   >
                     Browse the archive
@@ -634,7 +653,7 @@ const BlogApp: React.FC = () => {
                 className={`rounded-2xl overflow-hidden shadow-sm border ${
                   isDark
                     ? "bg-neutral-700 border-neutral-700"
-                    : "bg-slate-100 border-slate-200"
+                    : "bg-neutral-100 border-neutral-200"
                 }`}
               >
                 {featuredPost.image && (
@@ -657,7 +676,7 @@ const BlogApp: React.FC = () => {
           <div>
             <p
               className={`text-xs font-semibold uppercase tracking-widest ${
-                isDark ? "text-neutral-300" : "text-slate-500"
+                isDark ? "text-neutral-300" : "text-neutral-500"
               }`}
             >
               Latest Stories
@@ -667,7 +686,7 @@ const BlogApp: React.FC = () => {
             </h2>
             <p
               className={`mt-2 max-w-2xl ${
-                isDark ? "text-neutral-300" : "text-slate-600"
+                isDark ? "text-neutral-300" : "text-neutral-600"
               }`}
             >
               Curated perspectives on development, product thinking, and the
@@ -685,10 +704,10 @@ const BlogApp: React.FC = () => {
                     isActive
                       ? isDark
                         ? "bg-neutral-300 text-neutral-900 border-neutral-300"
-                        : "bg-slate-900 text-white border-slate-900"
+                        : "bg-neutral-900 text-white border-neutral-900"
                       : isDark
                         ? "bg-neutral-900/70 text-neutral-300 border-neutral-700 hover:border-neutral-600 hover:text-white"
-                        : "bg-white/80 text-slate-600 border-slate-200 hover:border-slate-300 hover:text-slate-900"
+                        : "bg-white/80 text-neutral-600 border-neutral-200 hover:border-neutral-300 hover:text-neutral-900"
                   }`}
                 >
                   {category}
@@ -700,11 +719,11 @@ const BlogApp: React.FC = () => {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {loading ? (
-            <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
+            <p className={isDark ? "text-neutral-300" : "text-neutral-500"}>
               Loading...
             </p>
           ) : filteredPosts.length === 0 ? (
-            <p className={isDark ? "text-neutral-300" : "text-slate-500"}>
+            <p className={isDark ? "text-neutral-300" : "text-neutral-500"}>
               No blogs available.
             </p>
           ) : (
@@ -715,12 +734,12 @@ const BlogApp: React.FC = () => {
                 className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition cursor-pointer border ${
                   isDark
                     ? "bg-neutral-900/70 border-neutral-700"
-                    : "bg-white border-slate-200"
+                    : "bg-white border-neutral-200"
                 }`}
               >
                 <div
                   className={`aspect-[16/10] ${
-                    isDark ? "bg-neutral-700" : "bg-slate-100"
+                    isDark ? "bg-neutral-700" : "bg-neutral-100"
                   }`}
                 >
                   {post.image && (
@@ -737,7 +756,7 @@ const BlogApp: React.FC = () => {
                     className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                       isDark
                         ? "text-neutral-900 bg-neutral-300"
-                        : "text-slate-500 bg-slate-100"
+                        : "text-neutral-500 bg-neutral-100"
                     }`}
                   >
                     {post.category}
@@ -745,14 +764,14 @@ const BlogApp: React.FC = () => {
                   <h2 className="text-lg font-semibold mt-3">{post.title}</h2>
                   <p
                     className={`mt-2 line-clamp-3 ${
-                      isDark ? "text-neutral-300" : "text-slate-600"
+                      isDark ? "text-neutral-300" : "text-neutral-600"
                     }`}
                   >
                     {post.excerpt}
                   </p>
                   <div
                     className={`flex items-center gap-4 text-xs mt-4 ${
-                      isDark ? "text-neutral-300" : "text-slate-500"
+                      isDark ? "text-neutral-300" : "text-neutral-500"
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -771,12 +790,12 @@ const BlogApp: React.FC = () => {
 
       {/* Add Blog Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-neutral-900/40 backdrop-blur-sm flex items-center justify-center z-50">
           <div
             className={`p-6 rounded-2xl w-full max-w-xl shadow-xl border ${
               isDark
                 ? "bg-neutral-900 border-neutral-700 text-neutral-300"
-                : "bg-white border-slate-200"
+                : "bg-white border-neutral-200"
             }`}
           >
             <div className="flex items-center justify-between mb-6">
@@ -785,7 +804,7 @@ const BlogApp: React.FC = () => {
                 className={`text-sm ${
                   isDark
                     ? "text-neutral-300 hover:text-neutral-300"
-                    : "text-slate-500 hover:text-slate-700"
+                    : "text-neutral-500 hover:text-neutral-700"
                 }`}
                 onClick={() => setIsAddModalOpen(false)}
               >
@@ -800,7 +819,7 @@ const BlogApp: React.FC = () => {
                 className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
                   isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-slate-200 focus:ring-slate-400"
+                    : "border-neutral-200 focus:ring-neutral-400"
                 }`}
                 value={newBlog.title || ""}
                 onChange={(e) =>
@@ -814,7 +833,7 @@ const BlogApp: React.FC = () => {
                 className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
                   isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-slate-200 focus:ring-slate-400"
+                    : "border-neutral-200 focus:ring-neutral-400"
                 }`}
                 value={newBlog.excerpt || ""}
                 onChange={(e) =>
@@ -825,7 +844,7 @@ const BlogApp: React.FC = () => {
               <div className="space-y-2">
                 <div
                   className={`text-xs font-semibold uppercase tracking-wide ${
-                    isDark ? "text-neutral-300" : "text-slate-600"
+                    isDark ? "text-neutral-300" : "text-neutral-600"
                   }`}
                 >
                   Cover image
@@ -836,7 +855,7 @@ const BlogApp: React.FC = () => {
                   className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
                     isDark
                       ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                      : "border-slate-200 focus:ring-slate-400"
+                      : "border-neutral-200 focus:ring-neutral-400"
                   }`}
                   value={newBlog.image || ""}
                   onChange={(e) =>
@@ -847,7 +866,7 @@ const BlogApp: React.FC = () => {
                   className={`rounded-lg border overflow-hidden ${
                     isDark
                       ? "border-neutral-800 bg-neutral-900/70"
-                      : "border-slate-200 bg-slate-50"
+                      : "border-neutral-200 bg-neutral-50"
                   }`}
                 >
                   {newBlog.image ? (
@@ -860,7 +879,7 @@ const BlogApp: React.FC = () => {
                   ) : (
                     <div
                       className={`h-40 w-full flex items-center justify-center text-xs ${
-                        isDark ? "text-neutral-400" : "text-slate-500"
+                        isDark ? "text-neutral-400" : "text-neutral-500"
                       }`}
                     >
                       Image preview appears here
@@ -873,7 +892,7 @@ const BlogApp: React.FC = () => {
                 className={`w-full border p-3 rounded-lg focus:outline-none focus:ring-2 ${
                   isDark
                     ? "bg-neutral-900 border-neutral-700 text-neutral-300 focus:ring-neutral-300"
-                    : "border-slate-200 focus:ring-slate-400"
+                    : "border-neutral-200 focus:ring-neutral-400"
                 }`}
                 value={newBlog.category || ""}
                 onChange={(e) =>
@@ -900,7 +919,7 @@ const BlogApp: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
                   isDark
                     ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                    : "text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                    : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
                 }`}
                 onClick={() => setIsAddModalOpen(false)}
               >
@@ -910,7 +929,7 @@ const BlogApp: React.FC = () => {
                 className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
                   isDark
                     ? "bg-neutral-300 text-neutral-900 hover:bg-neutral-200"
-                    : "bg-slate-900 text-white hover:bg-slate-800"
+                    : "bg-neutral-900 text-white hover:bg-neutral-800"
                 }`}
                 onClick={handleAddBlog}
               >
@@ -923,12 +942,14 @@ const BlogApp: React.FC = () => {
 
       <footer
         className={`py-8 mt-auto ${
-          isDark ? "bg-neutral-900 text-neutral-300" : "bg-slate-900 text-white"
+          isDark
+            ? "bg-neutral-900 text-neutral-300"
+            : "bg-neutral-900 text-white"
         }`}
       >
         <div
           className={`max-w-7xl mx-auto px-4 text-sm ${
-            isDark ? "text-neutral-300" : "text-slate-300"
+            isDark ? "text-neutral-300" : "text-neutral-300"
           }`}
         >
           (c) 2025 TechBlog. All rights reserved.
