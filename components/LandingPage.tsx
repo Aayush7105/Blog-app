@@ -25,6 +25,7 @@ export default function LandingPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const [theme, setTheme] = useState<ThemeMode>("light");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
   const [userPosts, setUserPosts] = useState<
     {
       _id: string;
@@ -85,7 +86,39 @@ export default function LandingPage() {
     loadUserPosts();
   }, [session?.user?.email]);
 
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      if (!session?.user?.email) {
+        setProfileImage(null);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `/api/users/${encodeURIComponent(session.user.email)}`,
+        );
+        const data = await res.json();
+        if (data.success && data.user?.image) {
+          setProfileImage(data.user.image);
+          return;
+        }
+      } catch (err) {
+        console.error("Error loading profile image:", err);
+      }
+
+      setProfileImage(session.user.image ?? null);
+    };
+
+    loadProfileImage();
+  }, [session?.user?.email, session?.user?.image]);
+
   const isDark = theme === "dark";
+  const fallbackAvatar = session?.user?.email
+    ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
+        session.user.email,
+      )}&size=96&background=0f172a&color=ffffff`
+    : "";
+  const avatarSrc = profileImage || fallbackAvatar;
   const containerClass = useMemo(
     () =>
       isDark
@@ -147,13 +180,20 @@ export default function LandingPage() {
               {session?.user?.email && (
                 <Link
                   href="/profile"
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ${
+                  className={`h-10 w-10 rounded-full overflow-hidden border transition duration-300 inline-flex items-center justify-center ${
                     isDark
-                      ? "text-foreground hover:bg-secondary hover:text-foreground"
-                      : "text-foreground hover:bg-secondary hover:text-foreground"
+                      ? "border-border hover:border-accent/40"
+                      : "border-border hover:border-accent/40"
                   }`}
+                  aria-label="Profile"
+                  title="Profile"
                 >
-                  Profile
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarSrc}
+                    alt={`${session.user.name || session.user.email} profile`}
+                    className="h-full w-full object-cover"
+                  />
                 </Link>
               )}
               <button
