@@ -33,20 +33,20 @@ interface BlogPost {
 type ThemeMode = "light" | "dark";
 
 const AUTO_COVER_GRADIENTS = [
-  "from-zinc-300 via-neutral-500 to-zinc-800",
-  "from-stone-300 via-neutral-500 to-stone-900",
-  "from-neutral-300 via-gray-500 to-zinc-800",
-  "from-gray-300 via-neutral-500 to-neutral-900",
-  "from-neutral-400 via-stone-500 to-neutral-800",
-  "from-stone-400 via-gray-600 to-zinc-900",
+  "from-zinc-500 via-neutral-700 to-zinc-950",
+  "from-stone-500 via-neutral-700 to-stone-950",
+  "from-neutral-500 via-gray-700 to-zinc-950",
+  "from-gray-500 via-neutral-700 to-neutral-950",
+  "from-neutral-600 via-stone-700 to-neutral-950",
+  "from-stone-600 via-gray-700 to-zinc-950",
 ];
 
 const COVER_STYLE_GRADIENTS: Record<string, string> = {
-  sunset: "from-stone-300 via-neutral-500 to-zinc-800",
-  ocean: "from-neutral-300 via-gray-500 to-zinc-800",
-  forest: "from-stone-400 via-neutral-600 to-neutral-900",
-  dusk: "from-gray-400 via-neutral-600 to-zinc-900",
-  bloom: "from-neutral-200 via-gray-500 to-zinc-800",
+  sunset: "from-stone-500 via-neutral-700 to-zinc-950",
+  ocean: "from-neutral-500 via-gray-700 to-zinc-950",
+  forest: "from-stone-600 via-neutral-700 to-neutral-950",
+  dusk: "from-gray-600 via-neutral-800 to-zinc-950",
+  bloom: "from-neutral-500 via-gray-700 to-zinc-950",
 };
 
 const coverStyleOptions = [
@@ -102,13 +102,13 @@ const GradientCover: React.FC<GradientCoverProps> = ({
     <div
       className={`relative isolate overflow-hidden ${className} bg-gradient-to-br ${coverGradient}`}
     >
-      <div className={`absolute inset-0 ${isDark ? "bg-black/22" : "bg-black/12"}`} />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.33),transparent_42%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_84%,rgba(0,0,0,0.46),transparent_44%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-25 bg-[linear-gradient(125deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_42%,rgba(0,0,0,0.22)_100%)]" />
+      <div className={`absolute inset-0 ${isDark ? "bg-black/36" : "bg-black/24"}`} />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.2),transparent_40%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_84%,rgba(0,0,0,0.62),transparent_46%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-20 bg-[linear-gradient(125deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_42%,rgba(0,0,0,0.34)_100%)]" />
 
       <div className="relative z-10 flex h-full flex-col justify-between p-5 text-white">
-        <span className="inline-flex w-fit items-center rounded-full border border-white/35 bg-black/20 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/95 backdrop-blur">
+        <span className="inline-flex w-fit items-center rounded-full border border-white/35 bg-black/32 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/95 backdrop-blur">
           {category}
         </span>
         <div>
@@ -348,8 +348,8 @@ const BlogApp: React.FC = () => {
       <div
         className={
           isDark
-            ? "min-h-screen bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(212,212,212,0.13),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(82,82,82,0.24),transparent_52%),linear-gradient(180deg,#0a0a0a_0%,#171717_100%)]"
-            : "min-h-screen bg-neutral-50 text-neutral-900 bg-[radial-gradient(1060px_circle_at_8%_-16%,#fafaf9,transparent_56%),radial-gradient(900px_circle_at_95%_0%,#f3f4f6,transparent_52%),linear-gradient(180deg,#fafafa_0%,#f5f5f5_100%)]"
+            ? "min-h-screen bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+            : "min-h-screen bg-neutral-50 text-neutral-900 bg-[radial-gradient(1060px_circle_at_8%_-16%,#f5f5f5,transparent_56%),radial-gradient(900px_circle_at_95%_0%,#e5e7eb,transparent_52%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
         }
       >
         <nav
@@ -494,8 +494,8 @@ const BlogApp: React.FC = () => {
     <div
       className={
         isDark
-          ? "min-h-screen bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(212,212,212,0.13),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(82,82,82,0.24),transparent_52%),linear-gradient(180deg,#0a0a0a_0%,#171717_100%)]"
-          : "min-h-screen bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#fafaf9,transparent_55%),radial-gradient(980px_circle_at_82%_-14%,#f3f4f6,transparent_50%),linear-gradient(180deg,#fafafa_0%,#f5f5f5_100%)]"
+          ? "min-h-screen bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+          : "min-h-screen bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#f5f5f5,transparent_55%),radial-gradient(980px_circle_at_82%_-14%,#e5e7eb,transparent_50%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
       }
     >
       {/* Navbar */}
@@ -847,8 +847,8 @@ const BlogApp: React.FC = () => {
           <div
             className={`w-full max-w-2xl rounded-3xl p-[1px] shadow-2xl ${
               isDark
-                ? "bg-gradient-to-br from-neutral-500 via-neutral-700 to-neutral-900"
-                : "bg-gradient-to-br from-neutral-200 via-neutral-300 to-neutral-400"
+                ? "bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-950"
+                : "bg-gradient-to-br from-neutral-300 via-neutral-500 to-neutral-700"
             }`}
           >
             <div
