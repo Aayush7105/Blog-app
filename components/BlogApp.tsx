@@ -348,8 +348,8 @@ const BlogApp: React.FC = () => {
       <div
         className={
           isDark
-            ? "min-h-screen bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-            : "min-h-screen bg-neutral-50 text-neutral-900 bg-[radial-gradient(1060px_circle_at_8%_-16%,#f5f5f5,transparent_56%),radial-gradient(900px_circle_at_95%_0%,#e5e7eb,transparent_52%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
+            ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+            : "min-h-screen font-sans bg-neutral-50 text-neutral-900 bg-[radial-gradient(1060px_circle_at_8%_-16%,#f5f5f5,transparent_56%),radial-gradient(900px_circle_at_95%_0%,#e5e7eb,transparent_52%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
         }
       >
         <nav
@@ -494,8 +494,8 @@ const BlogApp: React.FC = () => {
     <div
       className={
         isDark
-          ? "min-h-screen bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-          : "min-h-screen bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#f5f5f5,transparent_55%),radial-gradient(980px_circle_at_82%_-14%,#e5e7eb,transparent_50%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
+          ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+          : "min-h-screen font-sans bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#f5f5f5,transparent_55%),radial-gradient(980px_circle_at_82%_-14%,#e5e7eb,transparent_50%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
       }
     >
       {/* Navbar */}
