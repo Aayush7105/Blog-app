@@ -21,6 +21,7 @@ export default function LandingPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -36,6 +37,10 @@ export default function LandingPage() {
     }[]
   >([]);
   const [userPostsLoading, setUserPostsLoading] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const loadUserPosts = async () => {
@@ -111,7 +116,7 @@ export default function LandingPage() {
     };
   }, []);
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
   const fallbackAvatar = session?.user?.email
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
         session.user.email,

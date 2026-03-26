@@ -26,6 +26,7 @@ const parseReadMinutes = (readTime: string) => {
 
 export default function ProfilePage({ email }: { email: string }) {
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{
@@ -33,6 +34,10 @@ export default function ProfilePage({ email }: { email: string }) {
     email?: string;
     image?: string;
   } | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const load = async () => {
@@ -60,7 +65,7 @@ export default function ProfilePage({ email }: { email: string }) {
     if (email) load();
   }, [email]);
 
-  const isDark = resolvedTheme === "dark";
+  const isDark = mounted && resolvedTheme === "dark";
   const displayName = profile?.name || posts[0]?.author || "Author";
   const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "A";
   const isInitialLoading = loading && posts.length === 0;

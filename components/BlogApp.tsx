@@ -130,6 +130,7 @@ const GradientCover: React.FC<GradientCoverProps> = ({
 const BlogApp: React.FC = () => {
   const { data: session } = useSession();
   const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
@@ -146,7 +147,11 @@ const BlogApp: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const isDark = resolvedTheme === "dark";
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isDark = mounted && resolvedTheme === "dark";
   const fallbackAvatar = session?.user?.email
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
         session.user.email,
