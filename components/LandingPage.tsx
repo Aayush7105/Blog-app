@@ -4,9 +4,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 
 import {
-  BookOpen,
   ArrowRight,
   Zap,
   Users,
@@ -14,17 +14,13 @@ import {
   Github,
   Twitter,
   Linkedin,
-  Sun,
-  Moon,
   ChevronRight,
 } from "lucide-react";
-
-type ThemeMode = "light" | "dark";
 
 export default function LandingPage() {
   const { data: session } = useSession();
   const router = useRouter();
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const { resolvedTheme } = useTheme();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -40,28 +36,6 @@ export default function LandingPage() {
     }[]
   >([]);
   const [userPostsLoading, setUserPostsLoading] = useState(false);
-
-  useEffect(() => {
-    const saved =
-      typeof window !== "undefined"
-        ? (localStorage.getItem("theme") as ThemeMode | null)
-        : null;
-    if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-    }
-  }, [theme]);
 
   useEffect(() => {
     const loadUserPosts = async () => {
@@ -137,7 +111,7 @@ export default function LandingPage() {
     };
   }, []);
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
   const fallbackAvatar = session?.user?.email
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
         session.user.email,
@@ -264,25 +238,6 @@ export default function LandingPage() {
                   )}
                 </div>
               )}
-              <button
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
-                  isDark
-                    ? "bg-neutral-800 text-white hover:bg-slate-800"
-                    : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
-                }`}
-                aria-label="Toggle theme"
-              >
-                {isDark ? (
-                  <>
-                    <Moon className="" />
-                  </>
-                ) : (
-                  <>
-                    <Sun className="" />
-                  </>
-                )}
-              </button>
             </div>
           </div>
         </div>

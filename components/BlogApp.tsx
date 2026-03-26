@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 import {
   BookOpen,
   User,
@@ -9,8 +10,6 @@ import {
   Clock,
   Calendar,
   Plus,
-  Sun,
-  Moon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
@@ -29,8 +28,6 @@ interface BlogPost {
   readTime: string;
   content: string;
 }
-
-type ThemeMode = "light" | "dark";
 
 const AUTO_COVER_GRADIENTS = [
   "from-zinc-500 via-neutral-700 to-zinc-950",
@@ -132,8 +129,8 @@ const GradientCover: React.FC<GradientCoverProps> = ({
 
 const BlogApp: React.FC = () => {
   const { data: session } = useSession();
+  const { resolvedTheme } = useTheme();
 
-  const [theme, setTheme] = useState<ThemeMode>("light");
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
@@ -149,29 +146,7 @@ const BlogApp: React.FC = () => {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    const saved =
-      typeof window !== "undefined"
-        ? (localStorage.getItem("theme") as ThemeMode | null)
-        : null;
-    if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-    }
-  }, [theme]);
-
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
   const fallbackAvatar = session?.user?.email
     ? `https://ui-avatars.com/api/?name=${encodeURIComponent(
         session.user.email,
@@ -273,11 +248,6 @@ const BlogApp: React.FC = () => {
   const modalLabelClass = `text-xs font-semibold uppercase tracking-wide ${
     isDark ? "text-neutral-400" : "text-neutral-600"
   }`;
-  const themeToggleClass = `inline-flex h-10 w-10 items-center justify-center rounded-full border text-sm font-semibold backdrop-blur transition ${
-    isDark
-      ? "border-neutral-700 bg-neutral-900/90 text-neutral-300 hover:border-neutral-500 hover:text-white"
-      : "border-neutral-200 bg-white/85 text-neutral-700 hover:border-neutral-400 hover:text-neutral-900"
-  }`;
   const primaryButtonClass =
     "bg-neutral-300 text-neutral-950 hover:bg-neutral-200";
 
@@ -375,13 +345,6 @@ const BlogApp: React.FC = () => {
               </span>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setTheme(isDark ? "light" : "dark")}
-                className={themeToggleClass}
-                aria-label="Toggle theme"
-              >
-                {isDark ? <Moon /> : <Sun />}
-              </button>
               <button
                 onClick={() => setSelectedPost(null)}
                 className={`text-sm font-medium ${
@@ -531,13 +494,6 @@ const BlogApp: React.FC = () => {
                 >
                   <Plus className="h-4 w-4" /> Add Blog
                 </button>
-                <button
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
-                  className={themeToggleClass}
-                  aria-label="Toggle theme"
-                >
-                  {isDark ? <Moon /> : <Sun />}
-                </button>
                 {session.user.email ? (
                   <div className="relative" ref={profileMenuRef}>
                     <button
@@ -614,13 +570,6 @@ const BlogApp: React.FC = () => {
               </>
             ) : (
               <>
-                <button
-                  onClick={() => setTheme(isDark ? "light" : "dark")}
-                  className={themeToggleClass}
-                  aria-label="Toggle theme"
-                >
-                  {isDark ? <Moon /> : <Sun />}
-                </button>
                 <button
                   onClick={() => signIn("google")}
                   className={`rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}

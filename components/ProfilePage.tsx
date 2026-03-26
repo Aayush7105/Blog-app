@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { BookOpen, Calendar, Clock, Layers, Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+import { BookOpen, Calendar, Clock, Layers } from "lucide-react";
 
 interface BlogPost {
   _id: string;
@@ -16,8 +17,6 @@ interface BlogPost {
   readTime: string;
 }
 
-type ThemeMode = "light" | "dark";
-
 const parseReadMinutes = (readTime: string) => {
   const match = readTime.match(/\d+/);
   if (!match) return 0;
@@ -26,7 +25,7 @@ const parseReadMinutes = (readTime: string) => {
 };
 
 export default function ProfilePage({ email }: { email: string }) {
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const { resolvedTheme } = useTheme();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(false);
   const [profile, setProfile] = useState<{
@@ -34,28 +33,6 @@ export default function ProfilePage({ email }: { email: string }) {
     email?: string;
     image?: string;
   } | null>(null);
-
-  useEffect(() => {
-    const saved =
-      typeof window !== "undefined"
-        ? (localStorage.getItem("theme") as ThemeMode | null)
-        : null;
-    if (saved === "light" || saved === "dark") {
-      setTheme(saved);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", theme);
-    }
-  }, [theme]);
-
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.documentElement.classList.toggle("dark", theme === "dark");
-    }
-  }, [theme]);
 
   useEffect(() => {
     const load = async () => {
@@ -83,7 +60,7 @@ export default function ProfilePage({ email }: { email: string }) {
     if (email) load();
   }, [email]);
 
-  const isDark = theme === "dark";
+  const isDark = resolvedTheme === "dark";
   const displayName = profile?.name || posts[0]?.author || "Author";
   const avatarInitial = displayName.trim().charAt(0).toUpperCase() || "A";
   const isInitialLoading = loading && posts.length === 0;
@@ -136,25 +113,6 @@ export default function ProfilePage({ email }: { email: string }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setTheme(isDark ? "light" : "dark")}
-              className={`inline-flex items-center h-10 w-10 gap-2 px-3 py-2 rounded-full text-sm font-semibold transition ${
-                isDark
-                  ? "bg-neutral-800 text-white hover:bg-slate-800"
-                  : "bg-neutral-100 text-neutral-900 hover:bg-neutral-200"
-              }`}
-              aria-label="Toggle theme"
-            >
-              {isDark ? (
-                <>
-                  <Moon className="" />
-                </>
-              ) : (
-                <>
-                  <Sun className="" />
-                </>
-              )}
-            </button>
             <Link
               href="/blogapp"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition"
