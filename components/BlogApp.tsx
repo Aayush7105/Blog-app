@@ -73,6 +73,22 @@ const sortOptions: Array<{ label: string; value: BlogSortKey }> = [
 ];
 
 const BLOG_DRAFT_STORAGE_KEY = "techblog:new-blog-draft:v1";
+const BLOG_ARCHIVE_FILTERS_STORAGE_KEY = "techblog:archive-filters:v1";
+const DEFAULT_CATEGORIES = ["Development", "Design", "Technology"];
+
+interface ArchiveFiltersSnapshot {
+  selectedCategory: string;
+  searchQuery: string;
+  sortBy: BlogSortKey;
+  showOnlyMine: boolean;
+}
+
+const isBlogSortKey = (value: unknown): value is BlogSortKey => {
+  return (
+    typeof value === "string" &&
+    sortOptions.some((option) => option.value === value)
+  );
+};
 
 const hashString = (value: string): number => {
   return value.split("").reduce((acc, char) => {
@@ -224,6 +240,8 @@ const BlogApp: React.FC = () => {
   const [isPublishing, setIsPublishing] = useState(false);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const blogGridRef = useRef<HTMLElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const hasRestoredArchiveFilters = useRef(false);
 
   useEffect(() => {
     setMounted(true);
@@ -405,7 +423,83 @@ const BlogApp: React.FC = () => {
     toast.success("Draft cleared.");
   }, []);
 
-  const categories: string[] = ["All", "Development", "Design", "Technology"];
+  useEffect(() => {
+    if (typeof window === "undefined" || hasRestoredArchiveFilters.current) {
+      return;
+    }
+
+    try {
+      const storedFilters = window.localStorage.getItem(
+        BLOG_ARCHIVE_FILTERS_STORAGE_KEY,
+      );
+      if (!storedFilters) {
+        return;
+      }
+
+      const parsedFilters = JSON.parse(
+        storedFilters,
+      ) as Partial<ArchiveFiltersSnapshot>;
+
+      if (
+        typeof parsedFilters.selectedCategory === "string" &&
+        parsedFilters.selectedCategory.trim().length > 0
+      ) {
+        setSelectedCategory(parsedFilters.selectedCategory.trim());
+      }
+
+      if (typeof parsedFilters.searchQuery === "string") {
+        setSearchQuery(parsedFilters.searchQuery);
+      }
+
+      if (isBlogSortKey(parsedFilters.sortBy)) {
+        setSortBy(parsedFilters.sortBy);
+      }
+
+      if (typeof parsedFilters.showOnlyMine === "boolean") {
+        setShowOnlyMine(parsedFilters.showOnlyMine);
+      }
+    } catch (error) {
+      console.error("Error restoring archive filters:", error);
+      window.localStorage.removeItem(BLOG_ARCHIVE_FILTERS_STORAGE_KEY);
+    } finally {
+      hasRestoredArchiveFilters.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !hasRestoredArchiveFilters.current) {
+      return;
+    }
+
+    const filterSnapshot: ArchiveFiltersSnapshot = {
+      selectedCategory,
+      searchQuery,
+      sortBy,
+      showOnlyMine,
+    };
+
+    window.localStorage.setItem(
+      BLOG_ARCHIVE_FILTERS_STORAGE_KEY,
+      JSON.stringify(filterSnapshot),
+    );
+  }, [searchQuery, selectedCategory, showOnlyMine, sortBy]);
+
+  const categories = useMemo(() => {
+    const uniqueCategories = new Set<string>(["All", ...DEFAULT_CATEGORIES]);
+
+    for (const post of blogPosts) {
+      const normalizedCategory = post.category?.trim();
+      if (normalizedCategory) {
+        uniqueCategories.add(normalizedCategory);
+      }
+    }
+
+    if (selectedCategory !== "All") {
+      uniqueCategories.add(selectedCategory);
+    }
+
+    return [...uniqueCategories];
+  }, [blogPosts, selectedCategory]);
 
   const estimatedReadTime = useMemo(
     () => estimateReadTime(newBlog.content || ""),
@@ -472,10 +566,27 @@ const BlogApp: React.FC = () => {
   ]);
 
   const hasActiveArchiveFilters =
-    selectedCategory !== "All" || searchQuery.trim().length > 0 || showOnlyMine;
+    selectedCategory !== "All" ||
+    searchQuery.trim().length > 0 ||
+    sortBy !== "newest" ||
+    showOnlyMine;
   const hasDraftContent = hasBlogDraftContent(newBlog);
 
-  const featuredPost = blogPosts[0];
+  const featuredPost = useMemo(() => {
+    if (!blogPosts.length) {
+      return null;
+    }
+
+    return [...blogPosts].sort(
+      (a, b) => getPostTimestamp(b.date) - getPostTimestamp(a.date),
+    )[0];
+  }, [blogPosts]);
+  const canDeleteSelectedPost = Boolean(
+    session?.user?.email &&
+      selectedPost?.authorEmail &&
+      selectedPost.authorEmail === session.user.email,
+  );
+  const currentYear = new Date().getFullYear();
   const modalInputClass = `w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 ${
     isDark
       ? "border-neutral-700 bg-neutral-950/70 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
@@ -595,6 +706,49 @@ const BlogApp: React.FC = () => {
     setSortBy("newest");
     setShowOnlyMine(false);
   }, []);
+
+  useEffect(() => {
+    if (selectedPost) {
+      return;
+    }
+
+    const handleArchiveShortcuts = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName?.toLowerCase();
+      const isInputLike =
+        target?.isContentEditable ||
+        tagName === "input" ||
+        tagName === "textarea" ||
+        tagName === "select";
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+        return;
+      }
+
+      if (
+        event.key === "Escape" &&
+        document.activeElement === searchInputRef.current &&
+        searchQuery.trim().length > 0
+      ) {
+        event.preventDefault();
+        setSearchQuery("");
+        return;
+      }
+
+      if (event.key === "/" && !isInputLike) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleArchiveShortcuts);
+    return () => {
+      document.removeEventListener("keydown", handleArchiveShortcuts);
+    };
+  }, [searchQuery, selectedPost]);
 
   const handlePostCardKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLElement>, post: BlogPost) => {
@@ -731,16 +885,18 @@ const BlogApp: React.FC = () => {
                 dangerouslySetInnerHTML={{ __html: selectedPost.content }}
               ></div>
 
-              <div className="mt-8">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteBlog(selectedPost._id)}
-                  disabled={deletingPostId === selectedPost._id}
-                  className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {deletingPostId === selectedPost._id ? "Deleting..." : "Delete post"}
-                </button>
-              </div>
+              {canDeleteSelectedPost && (
+                <div className="mt-8">
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteBlog(selectedPost._id)}
+                    disabled={deletingPostId === selectedPost._id}
+                    className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {deletingPostId === selectedPost._id ? "Deleting..." : "Delete post"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </article>
@@ -1002,15 +1158,32 @@ const BlogApp: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(220px,1fr)_190px_auto]">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search title, excerpt, author..."
-                className={filterControlClass}
-                aria-label="Search posts"
-              />
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(240px,1fr)_190px_auto]">
+              <div className="relative">
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder="Search title, excerpt, author..."
+                  className={`${filterControlClass} pr-16`}
+                  aria-label="Search posts"
+                />
+                {searchQuery.trim().length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold transition ${
+                      isDark
+                        ? "text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        : "text-stone-600 hover:bg-amber-100 hover:text-stone-900"
+                    }`}
+                    aria-label="Clear search"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
 
               <select
                 value={sortBy}
@@ -1417,7 +1590,7 @@ const BlogApp: React.FC = () => {
             isDark ? "text-neutral-300" : "text-stone-600"
           }`}
         >
-          (c) 2025 TechBlog. All rights reserved.
+          (c) {currentYear} TechBlog. All rights reserved.
         </div>
       </footer>
     </div>
