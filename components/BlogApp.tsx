@@ -74,6 +74,19 @@ const getCoverGradient = (
   return AUTO_COVER_GRADIENTS[index];
 };
 
+const extractErrorMessage = (payload: unknown, fallback: string): string => {
+  if (
+    payload &&
+    typeof payload === "object" &&
+    "error" in payload &&
+    typeof payload.error === "string"
+  ) {
+    return payload.error;
+  }
+
+  return fallback;
+};
+
 interface GradientCoverProps {
   title: string;
   category: string;
@@ -146,6 +159,9 @@ const BlogApp: React.FC = () => {
 
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const blogGridRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -217,19 +233,39 @@ const BlogApp: React.FC = () => {
 
   // Fetch Blogs
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchBlogs = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/blogs");
+        const res = await fetch("/api/blogs", { signal: controller.signal });
         const data = await res.json();
-        if (data.success) setBlogPosts(data.posts);
+
+        if (!res.ok || !data.success) {
+          toast.error(extractErrorMessage(data, "Could not load blogs."));
+          return;
+        }
+
+        setBlogPosts(data.posts);
       } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") {
+          return;
+        }
+
         console.error("Error loading blogs:", err);
+        toast.error("Could not load blogs. Please refresh and try again.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
+
     fetchBlogs();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // Editor change handler (does NOT push value back to editor)
@@ -258,23 +294,35 @@ const BlogApp: React.FC = () => {
 
   // Add Blog
   const handleAddBlog = useCallback(async () => {
-    if (
-      !newBlog.title ||
-      !newBlog.excerpt ||
-      !newBlog.category ||
-      !newBlog.content
-    ) {
-      toast("Please fill in all required fields.");
+    if (isPublishing) return;
+
+    const trimmedTitle = newBlog.title?.trim();
+    const trimmedExcerpt = newBlog.excerpt?.trim();
+    const trimmedCategory = newBlog.category?.trim();
+    const trimmedContent = newBlog.content?.trim();
+
+    if (!trimmedTitle || !trimmedExcerpt || !trimmedCategory || !trimmedContent) {
+      toast.error("Please fill in all required fields.");
       return;
     }
 
     const blogData = {
       ...newBlog,
-      image: newBlog.image || "auto",
-      readTime: newBlog.readTime || "5 min read",
-      date: new Date().toLocaleDateString(),
+      title: trimmedTitle,
+      excerpt: trimmedExcerpt,
+      category: trimmedCategory,
+      content: trimmedContent,
+      image: newBlog.image?.trim() || "auto",
+      readTime: newBlog.readTime?.trim() || "5 min read",
+      date: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
       author: session?.user?.name || "Unknown Author",
     };
+
+    setIsPublishing(true);
 
     try {
       const res = await fetch("/api/blogs", {
@@ -285,37 +333,64 @@ const BlogApp: React.FC = () => {
       });
 
       const data = await res.json();
-      if (data.success) {
-        setBlogPosts((prev) => [data.post, ...prev]);
-        setIsAddModalOpen(false);
-        setNewBlog({});
-        setFrozenInitialContent("");
-      } else {
-        alert(`Failed to add blog: ${data.error}`);
+      if (!res.ok || !data.success) {
+        toast.error(extractErrorMessage(data, "Failed to add blog."));
+        return;
       }
+
+      setBlogPosts((prev) => [data.post, ...prev]);
+      setIsAddModalOpen(false);
+      setNewBlog({});
+      setFrozenInitialContent("");
+      toast.success("Blog published.");
     } catch (err) {
       console.error("Error adding blog:", err);
-      alert("Error creating blog.");
+      toast.error("Error creating blog.");
+    } finally {
+      setIsPublishing(false);
     }
-  }, [newBlog, session]);
+  }, [isPublishing, newBlog, session?.user?.name]);
 
   // Delete Blog
   const handleDeleteBlog = useCallback(async (id?: string) => {
-    if (!id) return;
+    if (!id || deletingPostId) return;
     if (!window.confirm("Delete this blog?")) return;
+
+    setDeletingPostId(id);
 
     try {
       const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
       const data = await res.json();
-      if (data.success) {
-        setBlogPosts((prev) => prev.filter((p) => p._id !== id));
-        setSelectedPost(null);
+
+      if (!res.ok || !data.success) {
+        toast.error(extractErrorMessage(data, "Could not delete blog."));
+        return;
       }
+
+      setBlogPosts((prev) => prev.filter((p) => p._id !== id));
+      setSelectedPost(null);
+      toast.success("Blog deleted.");
     } catch (err) {
       console.error("Delete error:", err);
-      alert("Could not delete blog.");
+      toast.error("Could not delete blog.");
+    } finally {
+      setDeletingPostId(null);
     }
+  }, [deletingPostId]);
+
+  const scrollToArchive = useCallback(() => {
+    blogGridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
+
+  const handlePostCardKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLElement>, post: BlogPost) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        setSelectedPost(post);
+      }
+    },
+    [],
+  );
 
   // Single Post View
   if (selectedPost) {
@@ -444,10 +519,12 @@ const BlogApp: React.FC = () => {
 
               <div className="mt-8">
                 <button
+                  type="button"
                   onClick={() => handleDeleteBlog(selectedPost._id)}
-                  className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700"
+                  disabled={deletingPostId === selectedPost._id}
+                  className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  Delete post
+                  {deletingPostId === selectedPost._id ? "Deleting..." : "Delete post"}
                 </button>
               </div>
             </div>
@@ -494,7 +571,9 @@ const BlogApp: React.FC = () => {
             {session?.user ? (
               <>
                 <button
+                  type="button"
                   onClick={() => setIsAddModalOpen(true)}
+                  disabled={isPublishing}
                   className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
                 >
                   <Plus className="h-4 w-4" /> Add Blog
@@ -644,12 +723,15 @@ const BlogApp: React.FC = () => {
                 </div>
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <button
+                    type="button"
                     onClick={() => setSelectedPost(featuredPost)}
                     className={`inline-flex items-center rounded-xl px-6 py-3 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
                   >
                     Read the feature
                   </button>
                   <button
+                    type="button"
+                    onClick={scrollToArchive}
                     className={`inline-flex items-center rounded-xl border px-6 py-3 text-sm font-semibold transition ${
                       isDark
                         ? "border-neutral-700 bg-neutral-900/50 text-neutral-300 hover:border-neutral-500 hover:bg-white/10"
@@ -682,7 +764,7 @@ const BlogApp: React.FC = () => {
       )}
 
       {/* Blog Grid */}
-      <section className="max-w-7xl mx-auto px-4 pb-16">
+      <section ref={blogGridRef} className="max-w-7xl mx-auto px-4 pb-16">
         <div className="flex flex-wrap items-end justify-between gap-6 mb-8">
           <div>
             <p
@@ -710,7 +792,9 @@ const BlogApp: React.FC = () => {
               return (
                 <button
                   key={category}
+                  type="button"
                   onClick={() => setSelectedCategory(category)}
+                  aria-pressed={isActive}
                   className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition border ${
                     isActive
                       ? "border-neutral-400 bg-neutral-300 text-neutral-950 shadow-sm"
@@ -740,7 +824,11 @@ const BlogApp: React.FC = () => {
               <article
                 key={post._id}
                 onClick={() => setSelectedPost(post)}
-                className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 cursor-pointer border hover:-translate-y-1 ${
+                onKeyDown={(event) => handlePostCardKeyDown(event, post)}
+                role="button"
+                tabIndex={0}
+                aria-label={`Open post: ${post.title}`}
+                className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 cursor-pointer border hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/60 ${
                   isDark
                     ? "bg-neutral-900/70 border-neutral-700"
                     : "bg-white border-neutral-200"
@@ -839,6 +927,7 @@ const BlogApp: React.FC = () => {
                       ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
                       : "border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
+                  disabled={isPublishing}
                   onClick={() => setIsAddModalOpen(false)}
                   aria-label="Close add blog modal"
                 >
@@ -959,20 +1048,24 @@ const BlogApp: React.FC = () => {
 
               <div className="mt-7 flex items-center justify-end gap-3">
                 <button
+                  type="button"
                   className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
                     isDark
                       ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                       : "border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
                   }`}
+                  disabled={isPublishing}
                   onClick={() => setIsAddModalOpen(false)}
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                  disabled={isPublishing}
                   onClick={handleAddBlog}
                 >
-                  Publish Blog
+                  {isPublishing ? "Publishing..." : "Publish Blog"}
                 </button>
               </div>
             </div>
