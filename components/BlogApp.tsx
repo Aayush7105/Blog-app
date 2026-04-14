@@ -106,14 +106,19 @@ const extractErrorMessage = (payload: unknown, fallback: string): string => {
   return fallback;
 };
 
-const hasBlogDraftContent = (draft: Partial<BlogPost>): boolean => {
+const hasBlogDraftContent = (draft: unknown): boolean => {
+  if (!draft || typeof draft !== "object") {
+    return false;
+  }
+
+  const parsedDraft = draft as Partial<BlogPost>;
   const fields = [
-    draft.title,
-    draft.excerpt,
-    draft.category,
-    draft.image,
-    draft.readTime,
-    draft.content,
+    parsedDraft.title,
+    parsedDraft.excerpt,
+    parsedDraft.category,
+    parsedDraft.image,
+    parsedDraft.readTime,
+    parsedDraft.content,
   ];
 
   return fields.some(
@@ -203,12 +208,15 @@ const BlogApp: React.FC = () => {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<BlogSortKey>("newest");
+  const [showOnlyMine, setShowOnlyMine] = useState(false);
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
 
-  // NEW: freeze editor initial content so editor does NOT re-render while typing
   const [frozenInitialContent, setFrozenInitialContent] = useState("");
+  const [editorInstanceKey, setEditorInstanceKey] = useState(0);
   const [newBlog, setNewBlog] = useState<Partial<BlogPost>>({});
 
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([]);
@@ -278,13 +286,6 @@ const BlogApp: React.FC = () => {
     };
   }, []);
 
-  // Freeze editor content only once when modal opens
-  useEffect(() => {
-    if (isAddModalOpen) {
-      setFrozenInitialContent(newBlog.content || "");
-    }
-  }, [isAddModalOpen, newBlog.content]);
-
   // Fetch Blogs
   useEffect(() => {
     const controller = new AbortController();
@@ -327,24 +328,170 @@ const BlogApp: React.FC = () => {
     setNewBlog((prev) => ({ ...prev, content }));
   }, []);
 
+  useEffect(() => {
+    if (!isAddModalOpen || typeof window === "undefined") return;
+
+    const draftSnapshot: Partial<BlogPost> = {
+      title: newBlog.title || "",
+      excerpt: newBlog.excerpt || "",
+      category: newBlog.category || "",
+      image: newBlog.image || "",
+      readTime: newBlog.readTime || "",
+      content: newBlog.content || "",
+    };
+
+    if (!hasBlogDraftContent(draftSnapshot)) {
+      window.localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+      return;
+    }
+
+    window.localStorage.setItem(
+      BLOG_DRAFT_STORAGE_KEY,
+      JSON.stringify(draftSnapshot),
+    );
+  }, [isAddModalOpen, newBlog]);
+
+  const handleOpenAddModal = useCallback(() => {
+    const currentDraftExists = hasBlogDraftContent(newBlog);
+    if (currentDraftExists) {
+      setFrozenInitialContent(newBlog.content || "");
+      setIsAddModalOpen(true);
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      setFrozenInitialContent("");
+      setIsAddModalOpen(true);
+      return;
+    }
+
+    try {
+      const storedDraft = window.localStorage.getItem(BLOG_DRAFT_STORAGE_KEY);
+      if (!storedDraft) {
+        setFrozenInitialContent("");
+        setIsAddModalOpen(true);
+        return;
+      }
+
+      const parsedDraft: Partial<BlogPost> = JSON.parse(storedDraft);
+      if (!hasBlogDraftContent(parsedDraft)) {
+        window.localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+        setFrozenInitialContent("");
+        setIsAddModalOpen(true);
+        return;
+      }
+
+      setNewBlog(parsedDraft);
+      setFrozenInitialContent(parsedDraft.content || "");
+      toast("Loaded your saved draft.");
+    } catch (error) {
+      console.error("Error restoring draft:", error);
+      window.localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+      setFrozenInitialContent("");
+    } finally {
+      setIsAddModalOpen(true);
+    }
+  }, [newBlog]);
+
+  const handleClearDraft = useCallback(() => {
+    setNewBlog({});
+    setFrozenInitialContent("");
+    setEditorInstanceKey((prev) => prev + 1);
+
+    if (typeof window !== "undefined") {
+      window.localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+    }
+
+    toast.success("Draft cleared.");
+  }, []);
+
   const categories: string[] = ["All", "Development", "Design", "Technology"];
 
-  const filteredPosts =
-    selectedCategory === "All"
-      ? blogPosts
-      : blogPosts.filter((p) => p.category === selectedCategory);
+  const estimatedReadTime = useMemo(
+    () => estimateReadTime(newBlog.content || ""),
+    [newBlog.content],
+  );
+
+  const visiblePosts = useMemo(() => {
+    const categoryFiltered =
+      selectedCategory === "All"
+        ? blogPosts
+        : blogPosts.filter((post) => post.category === selectedCategory);
+
+    const mineFiltered =
+      showOnlyMine && session?.user?.email
+        ? categoryFiltered.filter((post) => post.authorEmail === session.user.email)
+        : categoryFiltered;
+
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const queryFiltered = normalizedQuery
+      ? mineFiltered.filter((post) =>
+          [
+            post.title,
+            post.excerpt,
+            post.author,
+            post.category,
+            post.readTime,
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(normalizedQuery),
+        )
+      : mineFiltered;
+
+    const sorted = [...queryFiltered];
+    switch (sortBy) {
+      case "oldest":
+        sorted.sort((a, b) => getPostTimestamp(a.date) - getPostTimestamp(b.date));
+        break;
+      case "title-asc":
+        sorted.sort((a, b) => a.title.localeCompare(b.title));
+        break;
+      case "title-desc":
+        sorted.sort((a, b) => b.title.localeCompare(a.title));
+        break;
+      case "read-short":
+        sorted.sort((a, b) => getReadMinutes(a.readTime) - getReadMinutes(b.readTime));
+        break;
+      case "read-long":
+        sorted.sort((a, b) => getReadMinutes(b.readTime) - getReadMinutes(a.readTime));
+        break;
+      case "newest":
+      default:
+        sorted.sort((a, b) => getPostTimestamp(b.date) - getPostTimestamp(a.date));
+    }
+
+    return sorted;
+  }, [
+    blogPosts,
+    searchQuery,
+    selectedCategory,
+    session?.user?.email,
+    showOnlyMine,
+    sortBy,
+  ]);
+
+  const hasActiveArchiveFilters =
+    selectedCategory !== "All" || searchQuery.trim().length > 0 || showOnlyMine;
+  const hasDraftContent = hasBlogDraftContent(newBlog);
 
   const featuredPost = blogPosts[0];
   const modalInputClass = `w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 ${
     isDark
       ? "border-neutral-700 bg-neutral-950/70 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
-      : "border-neutral-300 bg-white text-neutral-900 placeholder:text-neutral-400 focus:border-neutral-400 focus:ring-neutral-300"
+      : "border-stone-300 bg-white/90 text-stone-900 placeholder:text-stone-400 focus:border-amber-400 focus:ring-amber-200"
   }`;
   const modalLabelClass = `text-xs font-semibold uppercase tracking-wide ${
-    isDark ? "text-neutral-400" : "text-neutral-600"
+    isDark ? "text-neutral-400" : "text-stone-600"
   }`;
-  const primaryButtonClass =
-    "bg-neutral-300 text-neutral-950 hover:bg-neutral-200";
+  const primaryButtonClass = isDark
+    ? "bg-neutral-300 text-neutral-950 hover:bg-neutral-200"
+    : "bg-amber-300 text-amber-950 hover:bg-amber-200 shadow-[0_10px_24px_rgba(217,119,6,0.24)]";
+  const filterControlClass = `rounded-xl border px-4 py-2 text-sm transition focus:outline-none focus:ring-2 ${
+    isDark
+      ? "border-neutral-700 bg-neutral-900/70 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
+      : "border-stone-300 bg-white/90 text-stone-900 placeholder:text-stone-500 focus:border-amber-400 focus:ring-amber-200"
+  }`;
 
   // Add Blog
   const handleAddBlog = useCallback(async () => {
@@ -367,7 +514,7 @@ const BlogApp: React.FC = () => {
       category: trimmedCategory,
       content: trimmedContent,
       image: newBlog.image?.trim() || "auto",
-      readTime: newBlog.readTime?.trim() || "5 min read",
+      readTime: newBlog.readTime?.trim() || estimateReadTime(trimmedContent),
       date: new Date().toLocaleDateString("en-US", {
         month: "short",
         day: "numeric",
@@ -396,6 +543,12 @@ const BlogApp: React.FC = () => {
       setIsAddModalOpen(false);
       setNewBlog({});
       setFrozenInitialContent("");
+      setEditorInstanceKey((prev) => prev + 1);
+
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(BLOG_DRAFT_STORAGE_KEY);
+      }
+
       toast.success("Blog published.");
     } catch (err) {
       console.error("Error adding blog:", err);
@@ -436,6 +589,13 @@ const BlogApp: React.FC = () => {
     blogGridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
+  const clearArchiveFilters = useCallback(() => {
+    setSelectedCategory("All");
+    setSearchQuery("");
+    setSortBy("newest");
+    setShowOnlyMine(false);
+  }, []);
+
   const handlePostCardKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLElement>, post: BlogPost) => {
       if (event.key === "Enter" || event.key === " ") {
@@ -453,14 +613,14 @@ const BlogApp: React.FC = () => {
         className={
           isDark
             ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-            : "min-h-screen font-sans bg-neutral-50 text-neutral-900 bg-[radial-gradient(1060px_circle_at_8%_-16%,#f5f5f5,transparent_56%),radial-gradient(900px_circle_at_95%_0%,#e5e7eb,transparent_52%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
+            : "min-h-screen font-sans bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
         }
       >
         <nav
           className={`sticky top-0 z-50 border-b ${
             isDark
               ? "bg-neutral-900/80 border-neutral-700"
-              : "bg-white/80 border-neutral-200"
+              : "bg-[#fff9f1]/90 border-amber-100/80"
           } backdrop-blur`}
         >
           <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
@@ -469,7 +629,7 @@ const BlogApp: React.FC = () => {
                 className={`h-9 w-9 rounded-lg flex items-center justify-center ${
                   isDark
                     ? "bg-neutral-300 text-neutral-900"
-                    : "bg-neutral-900 text-white"
+                    : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm"
                 }`}
               >
                 <BookOpen className="h-5 w-5" />
@@ -484,7 +644,7 @@ const BlogApp: React.FC = () => {
                 className={`text-sm font-medium ${
                   isDark
                     ? "text-neutral-300 hover:text-white"
-                    : "text-neutral-700 hover:text-neutral-900"
+                    : "text-stone-600 hover:text-stone-900"
                 }`}
               >
                 Back to all posts
@@ -499,7 +659,7 @@ const BlogApp: React.FC = () => {
             className={`inline-flex items-center text-sm font-medium mb-6 ${
               isDark
                 ? "text-neutral-300 hover:text-white"
-                : "text-neutral-600 hover:text-neutral-900"
+                : "text-stone-600 hover:text-stone-900"
             }`}
           >
             <ArrowLeft className="h-4 w-4 mr-2" /> Back
@@ -509,7 +669,7 @@ const BlogApp: React.FC = () => {
             className={`rounded-2xl overflow-hidden shadow-sm border ${
               isDark
                 ? "bg-neutral-900/70 border-neutral-700"
-                : "bg-white border-neutral-200"
+                : "bg-white/85 border-amber-100 shadow-[0_20px_48px_rgba(217,119,6,0.12)]"
             }`}
           >
             <GradientCover
@@ -526,7 +686,7 @@ const BlogApp: React.FC = () => {
                 className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                   isDark
                     ? "text-neutral-900 bg-neutral-300"
-                    : "text-neutral-500 bg-neutral-100"
+                    : "text-amber-900 bg-amber-100/80"
                 }`}
               >
                 {selectedPost.category}
@@ -538,7 +698,7 @@ const BlogApp: React.FC = () => {
 
               <div
                 className={`flex flex-wrap items-center gap-4 text-sm mt-4 ${
-                  isDark ? "text-neutral-300" : "text-neutral-600"
+                  isDark ? "text-neutral-300" : "text-stone-600"
                 }`}
               >
                 <span className="flex items-center gap-2">
@@ -549,7 +709,7 @@ const BlogApp: React.FC = () => {
                         selectedPost.authorEmail,
                       )}`}
                       className={
-                        isDark ? "hover:text-white" : "hover:text-neutral-900"
+                        isDark ? "hover:text-white" : "hover:text-amber-900"
                       }
                     >
                       {selectedPost.author}
@@ -594,7 +754,7 @@ const BlogApp: React.FC = () => {
       className={
         isDark
           ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-          : "min-h-screen font-sans bg-neutral-50 text-neutral-900 flex flex-col bg-[radial-gradient(1200px_circle_at_20%_-10%,#f5f5f5,transparent_55%),radial-gradient(980px_circle_at_82%_-14%,#e5e7eb,transparent_50%),linear-gradient(180deg,#f3f4f6_0%,#e5e7eb_100%)]"
+          : "min-h-screen font-sans bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
       }
     >
       {/* Navbar */}
@@ -602,7 +762,7 @@ const BlogApp: React.FC = () => {
         className={`sticky top-0 z-50 border-b ${
           isDark
             ? "bg-neutral-900/80 border-neutral-700"
-            : "bg-white/80 border-neutral-200"
+            : "bg-[#fff9f1]/90 border-amber-100/80"
         } backdrop-blur`}
       >
         <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4">
@@ -611,7 +771,7 @@ const BlogApp: React.FC = () => {
               className={`h-9 w-9 rounded-lg flex items-center justify-center ${
                 isDark
                   ? "bg-neutral-300 text-neutral-900"
-                  : "bg-neutral-900 text-white"
+                  : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm"
               }`}
             >
               <BookOpen className="h-5 w-5" />
@@ -626,9 +786,9 @@ const BlogApp: React.FC = () => {
               <>
                 <button
                   type="button"
-                  onClick={() => setIsAddModalOpen(true)}
+                  onClick={handleOpenAddModal}
                   disabled={isPublishing}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed ${primaryButtonClass}`}
                 >
                   <Plus className="h-4 w-4" /> Add Blog
                 </button>
@@ -640,7 +800,7 @@ const BlogApp: React.FC = () => {
                       className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
                         isDark
                           ? "border-neutral-600 hover:border-neutral-400"
-                          : "border-neutral-300 hover:border-neutral-500"
+                          : "border-amber-200 hover:border-amber-400"
                       }`}
                       aria-label="Open profile menu"
                       aria-haspopup="menu"
@@ -659,7 +819,7 @@ const BlogApp: React.FC = () => {
                         className={`absolute right-0 mt-2 w-40 rounded-lg border shadow-lg overflow-hidden z-50 ${
                           isDark
                             ? "bg-neutral-900 border-neutral-700"
-                            : "bg-white border-neutral-200"
+                            : "bg-[#fffdf8] border-amber-100"
                         }`}
                         role="menu"
                       >
@@ -669,7 +829,7 @@ const BlogApp: React.FC = () => {
                           className={`block px-4 py-2 text-sm transition ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
+                              : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
                           }`}
                           role="menuitem"
                         >
@@ -684,7 +844,7 @@ const BlogApp: React.FC = () => {
                           className={`w-full text-left px-4 py-2 text-sm transition ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                              : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
+                              : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
                           }`}
                           role="menuitem"
                         >
@@ -699,7 +859,7 @@ const BlogApp: React.FC = () => {
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
                       isDark
                         ? "text-neutral-300 hover:text-white hover:bg-white/10"
-                        : "text-neutral-700 hover:text-neutral-900 hover:bg-neutral-100"
+                        : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
                     }`}
                   >
                     Sign Out
@@ -728,7 +888,7 @@ const BlogApp: React.FC = () => {
               className={`grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 shadow-sm border ${
                 isDark
                   ? "bg-neutral-900/70 border-neutral-700"
-                  : "bg-white/80 border-neutral-200"
+                  : "bg-white/75 border-amber-100 shadow-[0_24px_56px_rgba(217,119,6,0.1)]"
               } backdrop-blur`}
             >
               <div>
@@ -736,7 +896,7 @@ const BlogApp: React.FC = () => {
                   className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                     isDark
                       ? "text-neutral-900 bg-neutral-300"
-                      : "text-neutral-600 bg-neutral-100"
+                      : "text-amber-900 bg-amber-100/80"
                   }`}
                 >
                   Weekly Digest
@@ -745,13 +905,13 @@ const BlogApp: React.FC = () => {
                   {featuredPost.title}
                 </h1>
                 <p
-                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-neutral-600"}`}
+                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-stone-600"}`}
                 >
                   {featuredPost.excerpt}
                 </p>
                 <div
                   className={`mt-6 flex flex-wrap items-center gap-4 text-sm ${
-                    isDark ? "text-neutral-300" : "text-neutral-500"
+                    isDark ? "text-neutral-300" : "text-stone-600"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -762,7 +922,7 @@ const BlogApp: React.FC = () => {
                           featuredPost.authorEmail,
                         )}`}
                         className={
-                          isDark ? "hover:text-white" : "hover:text-neutral-900"
+                          isDark ? "hover:text-white" : "hover:text-amber-900"
                         }
                       >
                         {featuredPost.author}
@@ -789,7 +949,7 @@ const BlogApp: React.FC = () => {
                     className={`inline-flex items-center rounded-xl border px-6 py-3 text-sm font-semibold transition ${
                       isDark
                         ? "border-neutral-700 bg-neutral-900/50 text-neutral-300 hover:border-neutral-500 hover:bg-white/10"
-                        : "border-neutral-300 text-neutral-700 hover:bg-neutral-100"
+                        : "border-amber-200 text-amber-900 hover:border-amber-300 hover:bg-amber-100/70"
                     }`}
                   >
                     Browse the archive
@@ -800,7 +960,7 @@ const BlogApp: React.FC = () => {
                 className={`rounded-2xl overflow-hidden shadow-sm border ${
                   isDark
                     ? "bg-neutral-700 border-neutral-700"
-                    : "bg-neutral-100 border-neutral-200"
+                    : "bg-amber-50/50 border-amber-100"
                 }`}
               >
                 <GradientCover
@@ -819,62 +979,137 @@ const BlogApp: React.FC = () => {
 
       {/* Blog Grid */}
       <section ref={blogGridRef} className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="flex flex-wrap items-end justify-between gap-6 mb-8">
-          <div>
-            <p
-              className={`text-xs font-semibold uppercase tracking-widest ${
-                isDark ? "text-neutral-300" : "text-neutral-500"
-              }`}
-            >
-              Latest Stories
-            </p>
-            <h2 className="text-2xl md:text-3xl font-semibold mt-2">
-              Insights from the builders&apos; desk
-            </h2>
-            <p
-              className={`mt-2 max-w-2xl ${
-                isDark ? "text-neutral-300" : "text-neutral-600"
-              }`}
-            >
-              Curated perspectives on development, product thinking, and the
-              future of technology.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => {
-              const isActive = selectedCategory === category;
-              return (
+        <div className="mb-8 space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div>
+              <p
+                className={`text-xs font-semibold uppercase tracking-widest ${
+                  isDark ? "text-neutral-300" : "text-amber-700"
+                }`}
+              >
+                Latest Stories
+              </p>
+              <h2 className="text-2xl md:text-3xl font-semibold mt-2">
+                Insights from the builders&apos; desk
+              </h2>
+              <p
+                className={`mt-2 max-w-2xl ${
+                  isDark ? "text-neutral-300" : "text-stone-600"
+                }`}
+              >
+                Curated perspectives on development, product thinking, and the
+                future of technology.
+              </p>
+            </div>
+
+            <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(220px,1fr)_190px_auto]">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search title, excerpt, author..."
+                className={filterControlClass}
+                aria-label="Search posts"
+              />
+
+              <select
+                value={sortBy}
+                onChange={(event) => setSortBy(event.target.value as BlogSortKey)}
+                className={filterControlClass}
+                aria-label="Sort posts"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+
+              {session?.user?.email ? (
                 <button
-                  key={category}
                   type="button"
-                  onClick={() => setSelectedCategory(category)}
-                  aria-pressed={isActive}
-                  className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition border ${
-                    isActive
-                      ? "border-neutral-400 bg-neutral-300 text-neutral-950 shadow-sm"
+                  onClick={() => setShowOnlyMine((prev) => !prev)}
+                  aria-pressed={showOnlyMine}
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    showOnlyMine
+                      ? isDark
+                        ? "border-neutral-400 bg-neutral-300 text-neutral-950"
+                        : "border-amber-300 bg-amber-200 text-amber-950"
                       : isDark
-                        ? "bg-neutral-900/70 text-neutral-300 border-neutral-700 hover:border-neutral-600 hover:text-white"
-                        : "bg-white/80 text-neutral-600 border-neutral-200 hover:border-neutral-300 hover:text-neutral-900"
+                        ? "border-neutral-700 bg-neutral-900/70 text-neutral-300 hover:border-neutral-500 hover:text-white"
+                        : "border-amber-200 bg-white/90 text-stone-700 hover:border-amber-300 hover:bg-amber-100/60 hover:text-stone-900"
                   }`}
                 >
-                  {category}
+                  {showOnlyMine ? "Showing my posts" : "Show my posts"}
                 </button>
-              );
-            })}
+              ) : (
+                <div />
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap gap-2">
+              {categories.map((category) => {
+                const isActive = selectedCategory === category;
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    aria-pressed={isActive}
+                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition border ${
+                      isActive
+                        ? isDark
+                          ? "border-neutral-400 bg-neutral-300 text-neutral-950 shadow-sm"
+                          : "border-amber-300 bg-amber-200 text-amber-950 shadow-sm"
+                        : isDark
+                          ? "bg-neutral-900/70 text-neutral-300 border-neutral-700 hover:border-neutral-600 hover:text-white"
+                          : "bg-white/80 text-stone-600 border-amber-100 hover:border-amber-300 hover:text-stone-900"
+                    }`}
+                  >
+                    {category}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div
+              className={`flex items-center gap-3 text-xs font-medium ${
+                isDark ? "text-neutral-400" : "text-stone-600"
+              }`}
+            >
+              <span>
+                Showing {visiblePosts.length} of {blogPosts.length} posts
+              </span>
+              {hasActiveArchiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearArchiveFilters}
+                  className={`rounded-full border px-3 py-1 transition ${
+                    isDark
+                      ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white"
+                      : "border-amber-200 text-stone-700 hover:border-amber-300 hover:text-stone-900"
+                  }`}
+                >
+                  Clear filters
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {loading ? (
-            <p className={isDark ? "text-neutral-300" : "text-neutral-500"}>
+            <p className={isDark ? "text-neutral-300" : "text-stone-500"}>
               Loading...
             </p>
-          ) : filteredPosts.length === 0 ? (
-            <p className={isDark ? "text-neutral-300" : "text-neutral-500"}>
-              No blogs available.
+          ) : visiblePosts.length === 0 ? (
+            <p className={isDark ? "text-neutral-300" : "text-stone-500"}>
+              No posts match your current filters.
             </p>
           ) : (
-            filteredPosts.map((post) => (
+            visiblePosts.map((post) => (
               <article
                 key={post._id}
                 onClick={() => setSelectedPost(post)}
@@ -885,7 +1120,7 @@ const BlogApp: React.FC = () => {
                 className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 cursor-pointer border hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/60 ${
                   isDark
                     ? "bg-neutral-900/70 border-neutral-700"
-                    : "bg-white border-neutral-200"
+                    : "bg-white/85 border-amber-100 shadow-[0_16px_30px_rgba(217,119,6,0.1)]"
                 }`}
               >
                 <GradientCover
@@ -901,7 +1136,7 @@ const BlogApp: React.FC = () => {
                     className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                       isDark
                         ? "text-neutral-900 bg-neutral-300"
-                        : "text-neutral-500 bg-neutral-100"
+                        : "text-amber-900 bg-amber-100/80"
                     }`}
                   >
                     {post.category}
@@ -909,14 +1144,14 @@ const BlogApp: React.FC = () => {
                   <h2 className="text-lg font-semibold mt-3">{post.title}</h2>
                   <p
                     className={`mt-2 line-clamp-3 ${
-                      isDark ? "text-neutral-300" : "text-neutral-600"
+                      isDark ? "text-neutral-300" : "text-stone-600"
                     }`}
                   >
                     {post.excerpt}
                   </p>
                   <div
                     className={`flex items-center gap-4 text-xs mt-4 ${
-                      isDark ? "text-neutral-300" : "text-neutral-500"
+                      isDark ? "text-neutral-300" : "text-stone-500"
                     }`}
                   >
                     <span className="flex items-center gap-2">
@@ -937,28 +1172,28 @@ const BlogApp: React.FC = () => {
       {isAddModalOpen && (
         <div
           className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md ${
-            isDark ? "bg-neutral-950/75" : "bg-neutral-900/40"
+            isDark ? "bg-neutral-950/75" : "bg-amber-950/20"
           }`}
         >
           <div
             className={`w-full max-w-2xl rounded-3xl p-[1px] shadow-2xl ${
               isDark
                 ? "bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-950"
-                : "bg-gradient-to-br from-neutral-300 via-neutral-500 to-neutral-700"
+                : "bg-gradient-to-br from-amber-200 via-orange-300 to-cyan-300"
             }`}
           >
             <div
               className={`max-h-[90vh] overflow-y-auto rounded-3xl border p-6 md:p-7 ${
                 isDark
                   ? "border-neutral-700 bg-neutral-900/95 text-neutral-100"
-                  : "border-neutral-200 bg-white/95 text-neutral-900"
+                  : "border-amber-100 bg-[#fffaf3]/95 text-stone-900"
               }`}
             >
               <div className="mb-6 flex items-start justify-between gap-4">
                 <div>
                   <p
                     className={`text-xs font-semibold uppercase tracking-[0.18em] ${
-                      isDark ? "text-neutral-400" : "text-neutral-500"
+                      isDark ? "text-neutral-400" : "text-amber-700"
                     }`}
                   >
                     Editor Workspace
@@ -968,25 +1203,41 @@ const BlogApp: React.FC = () => {
                   </h2>
                   <p
                     className={`mt-1 text-sm ${
-                      isDark ? "text-neutral-400" : "text-neutral-600"
+                      isDark ? "text-neutral-400" : "text-stone-600"
                     }`}
                   >
                     Give your post a title, strong excerpt, and polished cover.
                   </p>
                 </div>
-                <button
-                  type="button"
-                  className={`h-9 w-9 rounded-full border text-sm font-semibold transition ${
-                    isDark
-                      ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
-                      : "border-neutral-300 text-neutral-600 hover:border-neutral-400 hover:bg-neutral-100 hover:text-neutral-900"
-                  }`}
-                  disabled={isPublishing}
-                  onClick={() => setIsAddModalOpen(false)}
-                  aria-label="Close add blog modal"
-                >
-                  X
-                </button>
+                <div className="flex items-center gap-2">
+                  {hasDraftContent && (
+                    <button
+                      type="button"
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                        isDark
+                          ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white"
+                          : "border-amber-200 text-stone-700 hover:border-amber-300 hover:text-stone-900"
+                      }`}
+                      disabled={isPublishing}
+                      onClick={handleClearDraft}
+                    >
+                      Clear draft
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className={`h-9 w-9 rounded-full border text-sm font-semibold transition ${
+                      isDark
+                        ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
+                        : "border-amber-200 text-stone-600 hover:border-amber-300 hover:bg-amber-100/70 hover:text-stone-900"
+                    }`}
+                    disabled={isPublishing}
+                    onClick={() => setIsAddModalOpen(false)}
+                    aria-label="Close add blog modal"
+                  >
+                    X
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-5">
@@ -1026,7 +1277,7 @@ const BlogApp: React.FC = () => {
                   <label className={modalLabelClass} htmlFor="blog-image">
                     Cover gradient
                   </label>
-                  <p className={`text-xs ${isDark ? "text-neutral-500" : "text-neutral-500"}`}>
+                  <p className={`text-xs ${isDark ? "text-neutral-500" : "text-stone-500"}`}>
                     Pick a gradient mood for your post cover.
                   </p>
                   <select
@@ -1047,7 +1298,7 @@ const BlogApp: React.FC = () => {
                     className={`overflow-hidden rounded-2xl border ${
                       isDark
                         ? "border-neutral-800 bg-neutral-950/60"
-                        : "border-neutral-200 bg-neutral-50"
+                        : "border-amber-100 bg-amber-50/50"
                     }`}
                   >
                     <GradientCover
@@ -1087,40 +1338,67 @@ const BlogApp: React.FC = () => {
                   className={`rounded-2xl border p-3 ${
                     isDark
                       ? "border-neutral-700 bg-neutral-950/50"
-                      : "border-neutral-200 bg-neutral-50/80"
+                      : "border-amber-100 bg-amber-50/40"
                   }`}
                 >
                   <p className={modalLabelClass}>Content *</p>
                   <div className="mt-2">
                     <CustomEditor
+                      key={editorInstanceKey}
                       value={frozenInitialContent}
                       onChange={handleEditorChange}
                     />
                   </div>
+                  <p
+                    className={`mt-3 text-xs ${
+                      isDark ? "text-neutral-400" : "text-stone-600"
+                    }`}
+                  >
+                    Estimated read time: {estimatedReadTime}
+                  </p>
                 </div>
               </div>
 
-              <div className="mt-7 flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
-                    isDark
-                      ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-                      : "border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900"
-                  }`}
-                  disabled={isPublishing}
-                  onClick={() => setIsAddModalOpen(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
-                  disabled={isPublishing}
-                  onClick={handleAddBlog}
-                >
-                  {isPublishing ? "Publishing..." : "Publish Blog"}
-                </button>
+              <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
+                {hasDraftContent ? (
+                  <button
+                    type="button"
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      isDark
+                        ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
+                    }`}
+                    disabled={isPublishing}
+                    onClick={handleClearDraft}
+                  >
+                    Start fresh
+                  </button>
+                ) : (
+                  <span />
+                )}
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      isDark
+                        ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
+                    }`}
+                    disabled={isPublishing}
+                    onClick={() => setIsAddModalOpen(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                    disabled={isPublishing}
+                    onClick={handleAddBlog}
+                  >
+                    {isPublishing ? "Publishing..." : "Publish Blog"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1131,12 +1409,12 @@ const BlogApp: React.FC = () => {
         className={`py-8 mt-auto ${
           isDark
             ? "bg-neutral-900 text-neutral-300"
-            : "bg-neutral-900 text-white"
+            : "bg-[#f4e8d5] text-stone-700 border-t border-amber-100"
         }`}
       >
         <div
           className={`max-w-7xl mx-auto px-4 text-sm ${
-            isDark ? "text-neutral-300" : "text-neutral-300"
+            isDark ? "text-neutral-300" : "text-stone-600"
           }`}
         >
           (c) 2025 TechBlog. All rights reserved.
