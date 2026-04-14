@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import {
@@ -29,6 +29,14 @@ interface BlogPost {
   content: string;
 }
 
+type BlogSortKey =
+  | "newest"
+  | "oldest"
+  | "title-asc"
+  | "title-desc"
+  | "read-short"
+  | "read-long";
+
 const AUTO_COVER_GRADIENTS = [
   "from-zinc-500 via-neutral-700 to-zinc-950",
   "from-stone-500 via-neutral-700 to-stone-950",
@@ -54,6 +62,17 @@ const coverStyleOptions = [
   { label: "Carbon dusk", value: "dusk" },
   { label: "Silver smoke", value: "bloom" },
 ];
+
+const sortOptions: Array<{ label: string; value: BlogSortKey }> = [
+  { label: "Newest first", value: "newest" },
+  { label: "Oldest first", value: "oldest" },
+  { label: "Title A-Z", value: "title-asc" },
+  { label: "Title Z-A", value: "title-desc" },
+  { label: "Read time: short", value: "read-short" },
+  { label: "Read time: long", value: "read-long" },
+];
+
+const BLOG_DRAFT_STORAGE_KEY = "techblog:new-blog-draft:v1";
 
 const hashString = (value: string): number => {
   return value.split("").reduce((acc, char) => {
@@ -85,6 +104,41 @@ const extractErrorMessage = (payload: unknown, fallback: string): string => {
   }
 
   return fallback;
+};
+
+const hasBlogDraftContent = (draft: Partial<BlogPost>): boolean => {
+  const fields = [
+    draft.title,
+    draft.excerpt,
+    draft.category,
+    draft.image,
+    draft.readTime,
+    draft.content,
+  ];
+
+  return fields.some(
+    (field) => typeof field === "string" && field.trim().length > 0,
+  );
+};
+
+const getPostTimestamp = (dateValue: string): number => {
+  const timestamp = new Date(dateValue).getTime();
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const getReadMinutes = (readTimeValue: string): number => {
+  const match = readTimeValue.match(/\d+/);
+  const minutes = match ? Number.parseInt(match[0], 10) : 0;
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : 1;
+};
+
+const estimateReadTime = (content: string): string => {
+  const plainText = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  if (!plainText) return "1 min read";
+
+  const words = plainText.split(" ").length;
+  const minutes = Math.max(1, Math.ceil(words / 220));
+  return `${minutes} min read`;
 };
 
 interface GradientCoverProps {
