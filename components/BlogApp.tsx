@@ -903,7 +903,7 @@ const BlogApp: React.FC = () => {
               </div>
 
               <div
-                className={`prose max-w-none mt-8 leading-relaxed [&_p]:leading-8 [&_p]:tracking-[0.012em] [&_li]:tracking-[0.01em] ${
+                className={`prose reading-spacious max-w-none mt-8 leading-relaxed ${
                   isDark ? "text-neutral-200" : "text-stone-800"
                 }`}
                 dangerouslySetInnerHTML={{ __html: selectedPost.content }}

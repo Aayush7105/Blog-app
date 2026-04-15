@@ -121,6 +121,15 @@
   .animate-rise-fade-delayed {
     animation: rise-fade 620ms cubic-bezier(0.2, 0.65, 0.3, 1) 120ms both;
   }
+
+  .reading-spacious p,
+  .reading-spacious p *,
+  .reading-spacious li,
+  .reading-spacious li * {
+    letter-spacing: 1.5px !important;
+    word-spacing: 3px !important;
+    line-height: 2.3 !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
