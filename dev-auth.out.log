@@ -1,0 +1,13 @@
+
+> my-blog-app@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.6 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://172.16.0.2:3000
+- Environments: .env.local
+
+✓ Starting...
+Creating turbopack project { dir: 'D:\\Blog-app', testMode: true }
+✓ Ready in 1492ms
+ GET /api/auth/session 200 in 2.2s (compile: 2.1s, render: 50ms)
