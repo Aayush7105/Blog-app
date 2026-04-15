@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
-import { Plus_Jakarta_Sans, Fraunces } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import {
   BookOpen,
   User,
@@ -20,12 +20,6 @@ const blogSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-blog-sans",
   weight: ["400", "500", "600", "700"],
-});
-
-const blogDisplay = Fraunces({
-  subsets: ["latin"],
-  variable: "--font-blog-display",
-  weight: ["500", "600", "700"],
 });
 
 // --- Interfaces ---
@@ -213,7 +207,7 @@ const GradientCover: React.FC<GradientCoverProps> = ({
           <h3
             className={`font-semibold leading-tight drop-shadow ${
               compact ? "text-lg" : "text-2xl md:text-3xl"
-            } font-[family-name:var(--font-blog-display)]`}
+            }`}
           >
             {title}
           </h3>
@@ -777,7 +771,7 @@ const BlogApp: React.FC = () => {
   if (selectedPost) {
     return (
       <div
-        className={`${blogSans.variable} ${blogDisplay.variable} ${
+        className={`${blogSans.variable} ${
           isDark
             ? "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
             : "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
@@ -815,7 +809,7 @@ const BlogApp: React.FC = () => {
               >
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="text-xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
+              <span className="text-xl font-semibold tracking-tight">
                 TechBlog
               </span>
             </div>
@@ -874,7 +868,7 @@ const BlogApp: React.FC = () => {
                 {selectedPost.category}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-semibold mt-4 font-[family-name:var(--font-blog-display)]">
+              <h1 className="text-3xl md:text-4xl font-semibold mt-4">
                 {selectedPost.title}
               </h1>
 
@@ -937,7 +931,7 @@ const BlogApp: React.FC = () => {
   // Home Page
   return (
     <div
-      className={`${blogSans.variable} ${blogDisplay.variable} ${
+      className={`${blogSans.variable} ${
         isDark
           ? "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
           : "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
@@ -976,7 +970,7 @@ const BlogApp: React.FC = () => {
             >
               <BookOpen className="h-5 w-5" />
             </div>
-            <span className="text-xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
+            <span className="text-xl font-semibold tracking-tight">
               TechBlog
             </span>
           </div>
@@ -1101,7 +1095,7 @@ const BlogApp: React.FC = () => {
                 >
                   Weekly Digest
                 </div>
-                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight tracking-tight font-[family-name:var(--font-blog-display)]">
+                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight tracking-tight">
                   {featuredPost.title}
                 </h1>
                 <p
@@ -1197,7 +1191,7 @@ const BlogApp: React.FC = () => {
               >
                 Latest Stories
               </p>
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2 font-[family-name:var(--font-blog-display)]">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2">
                 Insights from the builders&apos; desk
               </h2>
               <p
@@ -1369,7 +1363,7 @@ const BlogApp: React.FC = () => {
                     {post.category}
                   </span>
                   <h2
-                    className={`mt-3 text-lg font-semibold leading-snug transition-colors font-[family-name:var(--font-blog-display)] ${
+                    className={`mt-3 text-lg font-semibold leading-snug transition-colors ${
                       isDark ? "group-hover:text-white" : "group-hover:text-amber-900"
                     }`}
                   >
@@ -1431,7 +1425,7 @@ const BlogApp: React.FC = () => {
                   >
                     Editor Workspace
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
                     Create a new blog
                   </h2>
                   <p
