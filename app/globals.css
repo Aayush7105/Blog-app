@@ -73,3 +73,61 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes float-drift {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(0, -16px, 0) scale(1.04);
+    }
+  }
+
+  @keyframes rise-fade {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 18px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+
+  .bg-grid-soft {
+    background-image: linear-gradient(
+        to right,
+        rgba(148, 163, 184, 0.12) 1px,
+        transparent 1px
+      ),
+      linear-gradient(to bottom, rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+    background-size: 34px 34px;
+  }
+
+  .animate-float-drift {
+    animation: float-drift 18s ease-in-out infinite;
+  }
+
+  .animate-float-drift-delayed {
+    animation: float-drift 22s ease-in-out -7s infinite;
+  }
+
+  .animate-rise-fade {
+    animation: rise-fade 620ms cubic-bezier(0.2, 0.65, 0.3, 1) both;
+  }
+
+  .animate-rise-fade-delayed {
+    animation: rise-fade 620ms cubic-bezier(0.2, 0.65, 0.3, 1) 120ms both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float-drift,
+  .animate-float-drift-delayed,
+  .animate-rise-fade,
+  .animate-rise-fade-delayed {
+    animation: none !important;
+  }
+}

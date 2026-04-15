@@ -596,12 +596,12 @@ const BlogApp: React.FC = () => {
     isDark ? "text-neutral-400" : "text-stone-600"
   }`;
   const primaryButtonClass = isDark
-    ? "bg-neutral-300 text-neutral-950 hover:bg-neutral-200"
-    : "bg-amber-300 text-amber-950 hover:bg-amber-200 shadow-[0_10px_24px_rgba(217,119,6,0.24)]";
-  const filterControlClass = `rounded-xl border px-4 py-2 text-sm transition focus:outline-none focus:ring-2 ${
+    ? "bg-neutral-100 text-neutral-950 hover:bg-white hover:-translate-y-0.5 active:translate-y-0 shadow-[0_12px_28px_rgba(255,255,255,0.12)]"
+    : "bg-amber-300 text-amber-950 hover:bg-amber-200 hover:-translate-y-0.5 active:translate-y-0 shadow-[0_14px_30px_rgba(217,119,6,0.24)]";
+  const filterControlClass = `rounded-xl border px-4 py-2 text-sm transition-all duration-300 backdrop-blur-xl focus:outline-none focus:ring-2 ${
     isDark
-      ? "border-neutral-700 bg-neutral-900/70 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
-      : "border-stone-300 bg-white/90 text-stone-900 placeholder:text-stone-500 focus:border-amber-400 focus:ring-amber-200"
+      ? "border-neutral-700/80 bg-neutral-900/65 text-neutral-100 placeholder:text-neutral-500 focus:border-neutral-500 focus:ring-neutral-500/40"
+      : "border-amber-200/80 bg-white/75 text-stone-900 placeholder:text-stone-500 focus:border-amber-400 focus:ring-amber-200"
   }`;
 
   // Add Blog
@@ -766,24 +766,38 @@ const BlogApp: React.FC = () => {
       <div
         className={
           isDark
-            ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-            : "min-h-screen font-sans bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
+            ? "relative min-h-screen overflow-x-hidden font-sans bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+            : "relative min-h-screen overflow-x-hidden font-sans bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
         }
       >
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div
+            className={`absolute -top-36 left-[-10%] h-72 w-72 rounded-full blur-3xl animate-float-drift ${
+              isDark ? "bg-neutral-500/20" : "bg-amber-200/50"
+            }`}
+          />
+          <div
+            className={`absolute right-[-8%] top-52 h-80 w-80 rounded-full blur-3xl animate-float-drift-delayed ${
+              isDark ? "bg-neutral-400/15" : "bg-cyan-200/45"
+            }`}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-[0.08]" />
+
         <nav
-          className={`sticky top-0 z-50 border-b ${
+          className={`sticky top-0 z-50 border-b shadow-[0_12px_28px_rgba(15,23,42,0.08)] ${
             isDark
-              ? "bg-neutral-900/80 border-neutral-700"
-              : "bg-[#fff9f1]/90 border-amber-100/80"
-          } backdrop-blur`}
+              ? "bg-neutral-900/78 border-neutral-700/80"
+              : "bg-[#fff9f1]/86 border-amber-100/80"
+          } backdrop-blur-xl`}
         >
-          <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div className="flex items-center gap-3">
+          <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center animate-rise-fade">
+            <div className="group flex items-center gap-3">
               <div
-                className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+                className={`h-9 w-9 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-0.5 ${
                   isDark
-                    ? "bg-neutral-300 text-neutral-900"
-                    : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm"
+                    ? "bg-neutral-300 text-neutral-900 shadow-[0_8px_20px_rgba(255,255,255,0.12)]"
+                    : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-[0_10px_24px_rgba(217,119,6,0.24)]"
                 }`}
               >
                 <BookOpen className="h-5 w-5" />
@@ -795,7 +809,7 @@ const BlogApp: React.FC = () => {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => setSelectedPost(null)}
-                className={`text-sm font-medium ${
+                className={`text-sm font-medium transition-colors ${
                   isDark
                     ? "text-neutral-300 hover:text-white"
                     : "text-stone-600 hover:text-stone-900"
@@ -807,10 +821,10 @@ const BlogApp: React.FC = () => {
           </div>
         </nav>
 
-        <article className="max-w-4xl mx-auto px-4 py-10">
+        <article className="relative z-10 max-w-4xl mx-auto px-4 py-10 animate-rise-fade-delayed">
           <button
             onClick={() => setSelectedPost(null)}
-            className={`inline-flex items-center text-sm font-medium mb-6 ${
+            className={`inline-flex items-center gap-1.5 text-sm font-medium mb-6 transition-transform duration-300 hover:-translate-x-0.5 ${
               isDark
                 ? "text-neutral-300 hover:text-white"
                 : "text-stone-600 hover:text-stone-900"
@@ -820,12 +834,13 @@ const BlogApp: React.FC = () => {
           </button>
 
           <div
-            className={`rounded-2xl overflow-hidden shadow-sm border ${
+            className={`relative isolate rounded-2xl overflow-hidden shadow-xl border backdrop-blur-xl ${
               isDark
-                ? "bg-neutral-900/70 border-neutral-700"
-                : "bg-white/85 border-amber-100 shadow-[0_20px_48px_rgba(217,119,6,0.12)]"
+                ? "bg-neutral-900/74 border-neutral-700/80"
+                : "bg-white/82 border-amber-100/90 shadow-[0_24px_56px_rgba(217,119,6,0.12)]"
             }`}
           >
+            <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-24 bg-gradient-to-b from-white/25 to-transparent opacity-60" />
             <GradientCover
               title={selectedPost.title}
               category={selectedPost.category}
@@ -881,7 +896,9 @@ const BlogApp: React.FC = () => {
               </div>
 
               <div
-                className="prose max-w-none mt-8"
+                className={`prose max-w-none mt-8 leading-relaxed ${
+                  isDark ? "text-neutral-200" : "text-stone-800"
+                }`}
                 dangerouslySetInnerHTML={{ __html: selectedPost.content }}
               ></div>
 
@@ -909,25 +926,39 @@ const BlogApp: React.FC = () => {
     <div
       className={
         isDark
-          ? "min-h-screen font-sans bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-          : "min-h-screen font-sans bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
+          ? "relative min-h-screen overflow-x-hidden font-sans bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+          : "relative min-h-screen overflow-x-hidden font-sans bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
       }
     >
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className={`absolute left-[-10%] top-[-9rem] h-80 w-80 rounded-full blur-3xl animate-float-drift ${
+            isDark ? "bg-neutral-400/16" : "bg-amber-200/55"
+          }`}
+        />
+        <div
+          className={`absolute right-[-10%] top-36 h-[22rem] w-[22rem] rounded-full blur-3xl animate-float-drift-delayed ${
+            isDark ? "bg-neutral-500/12" : "bg-cyan-200/45"
+          }`}
+        />
+      </div>
+      <div className="pointer-events-none absolute inset-0 bg-grid-soft opacity-[0.08]" />
+
       {/* Navbar */}
       <nav
-        className={`sticky top-0 z-50 border-b ${
+        className={`sticky top-0 z-50 border-b shadow-[0_12px_28px_rgba(15,23,42,0.08)] ${
           isDark
-            ? "bg-neutral-900/80 border-neutral-700"
-            : "bg-[#fff9f1]/90 border-amber-100/80"
-        } backdrop-blur`}
+            ? "bg-neutral-900/78 border-neutral-700/80"
+            : "bg-[#fff9f1]/86 border-amber-100/80"
+        } backdrop-blur-xl`}
       >
-        <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4">
-          <div className="flex items-center gap-3">
+        <div className="max-w-7xl mx-auto h-16 flex justify-between items-center px-4 animate-rise-fade">
+          <div className="group flex items-center gap-3">
             <div
-              className={`h-9 w-9 rounded-lg flex items-center justify-center ${
+              className={`h-9 w-9 rounded-lg flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-0.5 ${
                 isDark
-                  ? "bg-neutral-300 text-neutral-900"
-                  : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-sm"
+                  ? "bg-neutral-300 text-neutral-900 shadow-[0_8px_20px_rgba(255,255,255,0.12)]"
+                  : "bg-gradient-to-br from-amber-300 to-orange-400 text-amber-950 shadow-[0_10px_24px_rgba(217,119,6,0.24)]"
               }`}
             >
               <BookOpen className="h-5 w-5" />
@@ -944,7 +975,7 @@ const BlogApp: React.FC = () => {
                   type="button"
                   onClick={handleOpenAddModal}
                   disabled={isPublishing}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition disabled:opacity-60 disabled:cursor-not-allowed ${primaryButtonClass}`}
+                  className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-300 disabled:opacity-60 disabled:cursor-not-allowed ${primaryButtonClass}`}
                 >
                   <Plus className="h-4 w-4" /> Add Blog
                 </button>
@@ -953,10 +984,10 @@ const BlogApp: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setIsProfileMenuOpen((prev) => !prev)}
-                      className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition ${
+                      className={`h-10 w-10 rounded-full overflow-hidden border inline-flex items-center justify-center transition-all duration-300 hover:scale-[1.03] ${
                         isDark
-                          ? "border-neutral-600 hover:border-neutral-400"
-                          : "border-amber-200 hover:border-amber-400"
+                          ? "border-neutral-600 hover:border-neutral-400 shadow-[0_8px_18px_rgba(0,0,0,0.35)]"
+                          : "border-amber-200 hover:border-amber-400 shadow-[0_8px_20px_rgba(217,119,6,0.18)]"
                       }`}
                       aria-label="Open profile menu"
                       aria-haspopup="menu"
@@ -972,17 +1003,17 @@ const BlogApp: React.FC = () => {
 
                     {isProfileMenuOpen && (
                       <div
-                        className={`absolute right-0 mt-2 w-40 rounded-lg border shadow-lg overflow-hidden z-50 ${
+                        className={`absolute right-0 mt-2 w-44 rounded-xl border shadow-lg overflow-hidden z-50 backdrop-blur-xl animate-rise-fade ${
                           isDark
-                            ? "bg-neutral-900 border-neutral-700"
-                            : "bg-[#fffdf8] border-amber-100"
+                            ? "bg-neutral-900/95 border-neutral-700/90"
+                            : "bg-[#fffdf8]/95 border-amber-100/90"
                         }`}
                         role="menu"
                       >
                         <Link
                           href="/profile"
                           onClick={() => setIsProfileMenuOpen(false)}
-                          className={`block px-4 py-2 text-sm transition ${
+                          className={`block px-4 py-2 text-sm transition-colors ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
                               : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
@@ -997,7 +1028,7 @@ const BlogApp: React.FC = () => {
                             setIsProfileMenuOpen(false);
                             signOut();
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm transition ${
+                          className={`w-full text-left px-4 py-2 text-sm transition-colors ${
                             isDark
                               ? "text-neutral-300 hover:text-white hover:bg-white/10"
                               : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
@@ -1012,7 +1043,7 @@ const BlogApp: React.FC = () => {
                 ) : (
                   <button
                     onClick={() => signOut()}
-                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
                       isDark
                         ? "text-neutral-300 hover:text-white hover:bg-white/10"
                         : "text-stone-700 hover:text-stone-900 hover:bg-amber-100/60"
@@ -1026,7 +1057,7 @@ const BlogApp: React.FC = () => {
               <>
                 <button
                   onClick={() => signIn("google")}
-                  className={`rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                  className={`rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
                 >
                   Sign in
                 </button>
@@ -1038,16 +1069,16 @@ const BlogApp: React.FC = () => {
 
       {/* Featured Post */}
       {featuredPost && (
-        <section className="relative">
-          <div className="max-w-7xl mx-auto px-4 pt-10 pb-6">
+        <section className="relative z-10 animate-rise-fade-delayed">
+          <div className="max-w-7xl mx-auto px-4 pt-10 pb-8">
             <div
-              className={`grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 shadow-sm border ${
+              className={`group grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center rounded-3xl p-8 md:p-10 shadow-xl border backdrop-blur-xl ${
                 isDark
-                  ? "bg-neutral-900/70 border-neutral-700"
-                  : "bg-white/75 border-amber-100 shadow-[0_24px_56px_rgba(217,119,6,0.1)]"
-              } backdrop-blur`}
+                  ? "bg-neutral-900/72 border-neutral-700/80"
+                  : "bg-white/78 border-amber-100/90 shadow-[0_26px_58px_rgba(217,119,6,0.12)]"
+              }`}
             >
-              <div>
+              <div className="relative">
                 <div
                   className={`inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide px-3 py-1 rounded-full ${
                     isDark
@@ -1057,11 +1088,13 @@ const BlogApp: React.FC = () => {
                 >
                   Weekly Digest
                 </div>
-                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight">
+                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight tracking-tight">
                   {featuredPost.title}
                 </h1>
                 <p
-                  className={`mt-4 ${isDark ? "text-neutral-300" : "text-stone-600"}`}
+                  className={`mt-4 text-base leading-relaxed ${
+                    isDark ? "text-neutral-300" : "text-stone-600"
+                  }`}
                 >
                   {featuredPost.excerpt}
                 </p>
@@ -1095,17 +1128,17 @@ const BlogApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSelectedPost(featuredPost)}
-                    className={`inline-flex items-center rounded-xl px-6 py-3 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                    className={`inline-flex items-center rounded-xl px-6 py-3 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
                   >
                     Read the feature
                   </button>
                   <button
                     type="button"
                     onClick={scrollToArchive}
-                    className={`inline-flex items-center rounded-xl border px-6 py-3 text-sm font-semibold transition ${
+                    className={`inline-flex items-center rounded-xl border px-6 py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 ${
                       isDark
                         ? "border-neutral-700 bg-neutral-900/50 text-neutral-300 hover:border-neutral-500 hover:bg-white/10"
-                        : "border-amber-200 text-amber-900 hover:border-amber-300 hover:bg-amber-100/70"
+                        : "border-amber-200 bg-white/60 text-amber-900 hover:border-amber-300 hover:bg-amber-100/70"
                     }`}
                   >
                     Browse the archive
@@ -1113,10 +1146,10 @@ const BlogApp: React.FC = () => {
                 </div>
               </div>
               <div
-                className={`rounded-2xl overflow-hidden shadow-sm border ${
+                className={`relative rounded-2xl overflow-hidden shadow-lg border transition-transform duration-500 group-hover:-translate-y-1 ${
                   isDark
-                    ? "bg-neutral-700 border-neutral-700"
-                    : "bg-amber-50/50 border-amber-100"
+                    ? "bg-neutral-700/80 border-neutral-700"
+                    : "bg-amber-50/50 border-amber-100/90"
                 }`}
               >
                 <GradientCover
@@ -1125,7 +1158,7 @@ const BlogApp: React.FC = () => {
                   readTime={featuredPost.readTime}
                   imageToken={featuredPost.image}
                   isDark={isDark}
-                  className="aspect-[16/10]"
+                  className="aspect-[16/10] transition-transform duration-700 group-hover:scale-[1.02]"
                 />
               </div>
             </div>
@@ -1134,8 +1167,14 @@ const BlogApp: React.FC = () => {
       )}
 
       {/* Blog Grid */}
-      <section ref={blogGridRef} className="max-w-7xl mx-auto px-4 pb-16">
-        <div className="mb-8 space-y-5">
+      <section ref={blogGridRef} className="relative z-10 max-w-7xl mx-auto px-4 pb-16">
+        <div
+          className={`mb-8 space-y-5 rounded-2xl border p-5 md:p-6 backdrop-blur-xl animate-rise-fade-delayed ${
+            isDark
+              ? "border-neutral-700/80 bg-neutral-900/45"
+              : "border-amber-100/90 bg-white/60"
+          }`}
+        >
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div>
               <p
@@ -1145,7 +1184,7 @@ const BlogApp: React.FC = () => {
               >
                 Latest Stories
               </p>
-              <h2 className="text-2xl md:text-3xl font-semibold mt-2">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2">
                 Insights from the builders&apos; desk
               </h2>
               <p
@@ -1173,7 +1212,7 @@ const BlogApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold transition ${
+                    className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold transition-all duration-300 ${
                       isDark
                         ? "text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         : "text-stone-600 hover:bg-amber-100 hover:text-stone-900"
@@ -1203,7 +1242,7 @@ const BlogApp: React.FC = () => {
                   type="button"
                   onClick={() => setShowOnlyMine((prev) => !prev)}
                   aria-pressed={showOnlyMine}
-                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                  className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 active:translate-y-0 ${
                     showOnlyMine
                       ? isDark
                         ? "border-neutral-400 bg-neutral-300 text-neutral-950"
@@ -1231,7 +1270,7 @@ const BlogApp: React.FC = () => {
                     type="button"
                     onClick={() => setSelectedCategory(category)}
                     aria-pressed={isActive}
-                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition border ${
+                    className={`px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide transition-all duration-300 border hover:-translate-y-0.5 ${
                       isActive
                         ? isDark
                           ? "border-neutral-400 bg-neutral-300 text-neutral-950 shadow-sm"
@@ -1259,7 +1298,7 @@ const BlogApp: React.FC = () => {
                 <button
                   type="button"
                   onClick={clearArchiveFilters}
-                  className={`rounded-full border px-3 py-1 transition ${
+                  className={`rounded-full border px-3 py-1 transition-all duration-300 ${
                     isDark
                       ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white"
                       : "border-amber-200 text-stone-700 hover:border-amber-300 hover:text-stone-900"
@@ -1272,7 +1311,7 @@ const BlogApp: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
           {loading ? (
             <p className={isDark ? "text-neutral-300" : "text-stone-500"}>
               Loading...
@@ -1282,7 +1321,7 @@ const BlogApp: React.FC = () => {
               No posts match your current filters.
             </p>
           ) : (
-            visiblePosts.map((post) => (
+            visiblePosts.map((post, index) => (
               <article
                 key={post._id}
                 onClick={() => setSelectedPost(post)}
@@ -1290,12 +1329,14 @@ const BlogApp: React.FC = () => {
                 role="button"
                 tabIndex={0}
                 aria-label={`Open post: ${post.title}`}
-                className={`group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 cursor-pointer border hover:-translate-y-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/60 ${
+                style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
+                className={`group relative isolate animate-rise-fade rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 cursor-pointer border hover:-translate-y-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500/60 ${
                   isDark
-                    ? "bg-neutral-900/70 border-neutral-700"
-                    : "bg-white/85 border-amber-100 shadow-[0_16px_30px_rgba(217,119,6,0.1)]"
+                    ? "bg-neutral-900/74 border-neutral-700/80"
+                    : "bg-white/84 border-amber-100/90 shadow-[0_18px_34px_rgba(217,119,6,0.12)]"
                 }`}
               >
+                <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-20 bg-gradient-to-b from-white/20 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                 <GradientCover
                   title={post.title}
                   category={post.category}
@@ -1314,7 +1355,13 @@ const BlogApp: React.FC = () => {
                   >
                     {post.category}
                   </span>
-                  <h2 className="text-lg font-semibold mt-3">{post.title}</h2>
+                  <h2
+                    className={`mt-3 text-lg font-semibold leading-snug transition-colors ${
+                      isDark ? "group-hover:text-white" : "group-hover:text-amber-900"
+                    }`}
+                  >
+                    {post.title}
+                  </h2>
                   <p
                     className={`mt-2 line-clamp-3 ${
                       isDark ? "text-neutral-300" : "text-stone-600"
