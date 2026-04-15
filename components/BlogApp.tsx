@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
+import { Plus_Jakarta_Sans, Fraunces } from "next/font/google";
 import {
   BookOpen,
   User,
@@ -14,6 +15,18 @@ import {
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import CustomEditor from "./CustomEditor";
+
+const blogSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  variable: "--font-blog-sans",
+  weight: ["400", "500", "600", "700"],
+});
+
+const blogDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-blog-display",
+  weight: ["500", "600", "700"],
+});
 
 // --- Interfaces ---
 interface BlogPost {
@@ -200,7 +213,7 @@ const GradientCover: React.FC<GradientCoverProps> = ({
           <h3
             className={`font-semibold leading-tight drop-shadow ${
               compact ? "text-lg" : "text-2xl md:text-3xl"
-            }`}
+            } font-[family-name:var(--font-blog-display)]`}
           >
             {title}
           </h3>
@@ -764,11 +777,11 @@ const BlogApp: React.FC = () => {
   if (selectedPost) {
     return (
       <div
-        className={
+        className={`${blogSans.variable} ${blogDisplay.variable} ${
           isDark
-            ? "relative min-h-screen overflow-x-hidden font-sans bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-            : "relative min-h-screen overflow-x-hidden font-sans bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
-        }
+            ? "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-neutral-950 text-neutral-200 bg-[radial-gradient(920px_circle_at_12%_-10%,rgba(163,163,163,0.08),transparent_56%),radial-gradient(780px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+            : "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-[#fdfaf4] text-stone-900 bg-[radial-gradient(980px_circle_at_8%_-16%,rgba(251,191,36,0.18),transparent_52%),radial-gradient(900px_circle_at_94%_0%,rgba(14,165,233,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f6ecdd_100%)]"
+        }`}
       >
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div
@@ -802,7 +815,7 @@ const BlogApp: React.FC = () => {
               >
                 <BookOpen className="h-5 w-5" />
               </div>
-              <span className="text-xl font-semibold tracking-tight">
+              <span className="text-xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
                 TechBlog
               </span>
             </div>
@@ -861,7 +874,7 @@ const BlogApp: React.FC = () => {
                 {selectedPost.category}
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-semibold mt-4">
+              <h1 className="text-3xl md:text-4xl font-semibold mt-4 font-[family-name:var(--font-blog-display)]">
                 {selectedPost.title}
               </h1>
 
@@ -924,11 +937,11 @@ const BlogApp: React.FC = () => {
   // Home Page
   return (
     <div
-      className={
+      className={`${blogSans.variable} ${blogDisplay.variable} ${
         isDark
-          ? "relative min-h-screen overflow-x-hidden font-sans bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
-          : "relative min-h-screen overflow-x-hidden font-sans bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
-      }
+          ? "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-neutral-950 text-neutral-200 flex flex-col bg-[radial-gradient(980px_circle_at_12%_-12%,rgba(163,163,163,0.08),transparent_58%),radial-gradient(820px_circle_at_96%_0%,rgba(38,38,38,0.4),transparent_52%),linear-gradient(180deg,#070707_0%,#101010_100%)]"
+          : "relative min-h-screen overflow-x-hidden font-[family-name:var(--font-blog-sans)] bg-[#fcf8f1] text-stone-900 flex flex-col bg-[radial-gradient(1180px_circle_at_14%_-8%,rgba(251,191,36,0.2),transparent_52%),radial-gradient(980px_circle_at_88%_-14%,rgba(56,189,248,0.14),transparent_48%),linear-gradient(180deg,#fffdf8_0%,#f5ecdf_100%)]"
+      }`}
     >
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
         <div
@@ -963,7 +976,7 @@ const BlogApp: React.FC = () => {
             >
               <BookOpen className="h-5 w-5" />
             </div>
-            <span className="text-xl font-semibold tracking-tight">
+            <span className="text-xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
               TechBlog
             </span>
           </div>
@@ -1088,7 +1101,7 @@ const BlogApp: React.FC = () => {
                 >
                   Weekly Digest
                 </div>
-                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight tracking-tight">
+                <h1 className="text-3xl md:text-4xl font-semibold mt-4 leading-tight tracking-tight font-[family-name:var(--font-blog-display)]">
                   {featuredPost.title}
                 </h1>
                 <p
@@ -1184,7 +1197,7 @@ const BlogApp: React.FC = () => {
               >
                 Latest Stories
               </p>
-              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2">
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mt-2 font-[family-name:var(--font-blog-display)]">
                 Insights from the builders&apos; desk
               </h2>
               <p
@@ -1356,7 +1369,7 @@ const BlogApp: React.FC = () => {
                     {post.category}
                   </span>
                   <h2
-                    className={`mt-3 text-lg font-semibold leading-snug transition-colors ${
+                    className={`mt-3 text-lg font-semibold leading-snug transition-colors font-[family-name:var(--font-blog-display)] ${
                       isDark ? "group-hover:text-white" : "group-hover:text-amber-900"
                     }`}
                   >
@@ -1391,12 +1404,12 @@ const BlogApp: React.FC = () => {
       {/* Add Blog Modal */}
       {isAddModalOpen && (
         <div
-          className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md ${
+          className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300 ${
             isDark ? "bg-neutral-950/75" : "bg-amber-950/20"
           }`}
         >
           <div
-            className={`w-full max-w-2xl rounded-3xl p-[1px] shadow-2xl ${
+            className={`w-full max-w-2xl rounded-3xl p-[1px] shadow-2xl animate-rise-fade ${
               isDark
                 ? "bg-gradient-to-br from-neutral-700 via-neutral-800 to-neutral-950"
                 : "bg-gradient-to-br from-amber-200 via-orange-300 to-cyan-300"
@@ -1418,7 +1431,7 @@ const BlogApp: React.FC = () => {
                   >
                     Editor Workspace
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold">
+                  <h2 className="mt-2 text-2xl font-semibold tracking-tight font-[family-name:var(--font-blog-display)]">
                     Create a new blog
                   </h2>
                   <p
@@ -1433,7 +1446,7 @@ const BlogApp: React.FC = () => {
                   {hasDraftContent && (
                     <button
                       type="button"
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-300 ${
                         isDark
                           ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white"
                           : "border-amber-200 text-stone-700 hover:border-amber-300 hover:text-stone-900"
@@ -1446,7 +1459,7 @@ const BlogApp: React.FC = () => {
                   )}
                   <button
                     type="button"
-                    className={`h-9 w-9 rounded-full border text-sm font-semibold transition ${
+                    className={`h-9 w-9 rounded-full border text-sm font-semibold transition-all duration-300 ${
                       isDark
                         ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
                         : "border-amber-200 text-stone-600 hover:border-amber-300 hover:bg-amber-100/70 hover:text-stone-900"
@@ -1583,7 +1596,7 @@ const BlogApp: React.FC = () => {
                 {hasDraftContent ? (
                   <button
                     type="button"
-                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                       isDark
                         ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
@@ -1600,7 +1613,7 @@ const BlogApp: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
                       isDark
                         ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
@@ -1612,7 +1625,7 @@ const BlogApp: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition ${primaryButtonClass}`}
+                    className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
                     disabled={isPublishing}
                     onClick={handleAddBlog}
                   >
@@ -1626,10 +1639,10 @@ const BlogApp: React.FC = () => {
       )}
 
       <footer
-        className={`py-8 mt-auto ${
+        className={`relative z-10 py-8 mt-auto border-t backdrop-blur-xl ${
           isDark
-            ? "bg-neutral-900 text-neutral-300"
-            : "bg-[#f4e8d5] text-stone-700 border-t border-amber-100"
+            ? "bg-neutral-900/65 border-neutral-700/80 text-neutral-300"
+            : "bg-[#f4e8d5]/80 text-stone-700 border-amber-100/90"
         }`}
       >
         <div
