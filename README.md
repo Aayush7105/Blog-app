@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Blog App
+
+A full-stack blogging platform built with Next.js App Router, NextAuth (Google), MongoDB (Mongoose), and Tailwind CSS.
+
+## Features
+
+- Google sign-in with NextAuth
+- Create, list, and delete blog posts
+- Author profile pages and author-specific post feeds
+- Comment system for blog posts
+- Light and dark theme support
+- Toast notifications with Sonner
+
+## Tech Stack
+
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- NextAuth v4
+- MongoDB + Mongoose
+- Tailwind CSS
+
+## Prerequisites
+
+- Node.js 18.18+ (Node.js 20+ recommended)
+- MongoDB database (local or Atlas)
+- Google OAuth credentials for NextAuth
+
+## Environment Variables
+
+Create a .env.local file in the project root with:
+
+```env
+MONGODB_URI=your_mongodb_connection_string
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_long_random_secret
+```
+
+Notes:
+
+- NEXTAUTH_URL should match your app URL in each environment.
+- NEXTAUTH_SECRET should be a long random string in production.
 
 ## Getting Started
 
-First, run the development server:
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Run the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- npm run dev: Start local development server
+- npm run build: Build for production
+- npm run start: Run production build
+- npm run lint: Run ESLint checks
 
-## Learn More
+## App Routes
 
-To learn more about Next.js, take a look at the following resources:
+- /: Landing page
+- /blogapp: Main blog feed and editor access
+- /profile: Logged-in user profile
+- /profile/[email]: Public profile by email
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Auth
 
-## Deploy on Vercel
+- GET/POST /api/auth/[...nextauth]
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Blogs
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- GET /api/blogs: Get all posts
+- POST /api/blogs: Create a post (authenticated)
+- DELETE /api/blogs/[id]: Delete a post by id
+- GET /api/blogs/author/[email]: Get posts by author email
+
+### Comments
+
+- GET /api/comments?blogId=...: Get comments for a blog
+- POST /api/comments: Create comment (authenticated)
+
+### Users
+
+- GET /api/users/[email]: Get basic user profile
+
+### Health Check
+
+- GET /api/test-db: Verify MongoDB connection status
+
+## Project Structure
+
+- app: App Router pages and API routes
+- components: UI and page-level React components
+- lib: Shared utilities (MongoDB connector, helpers)
+- models: Mongoose models
+- public: Static assets
+
+## Deployment
+
+Deploy to any platform that supports Next.js (for example Vercel).
+
+For production deployment:
+
+- Set all required environment variables
+- Ensure MongoDB network access is allowed from deployment environment
+- Configure Google OAuth redirect URIs for your production domain
