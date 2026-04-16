@@ -430,6 +430,45 @@ const BlogApp: React.FC = () => {
     toast.success("Draft cleared.");
   }, []);
 
+  const closeAddModal = useCallback(() => {
+    if (isPublishing) {
+      return;
+    }
+
+    setIsAddModalOpen(false);
+  }, [isPublishing]);
+
+  useEffect(() => {
+    if (!isAddModalOpen) {
+      return;
+    }
+
+    const handleModalEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        closeAddModal();
+      }
+    };
+
+    document.addEventListener("keydown", handleModalEscape);
+    return () => {
+      document.removeEventListener("keydown", handleModalEscape);
+    };
+  }, [closeAddModal, isAddModalOpen]);
+
+  useEffect(() => {
+    if (!isAddModalOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isAddModalOpen]);
+
   useEffect(() => {
     if (typeof window === "undefined" || hasRestoredArchiveFilters.current) {
       return;
@@ -715,7 +754,7 @@ const BlogApp: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedPost) {
+    if (selectedPost || isAddModalOpen) {
       return;
     }
 
@@ -755,7 +794,7 @@ const BlogApp: React.FC = () => {
     return () => {
       document.removeEventListener("keydown", handleArchiveShortcuts);
     };
-  }, [searchQuery, selectedPost]);
+  }, [isAddModalOpen, searchQuery, selectedPost]);
 
   const handlePostCardKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLElement>, post: BlogPost) => {
@@ -1398,6 +1437,14 @@ const BlogApp: React.FC = () => {
       {/* Add Blog Modal */}
       {isAddModalOpen && (
         <div
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              closeAddModal();
+            }
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="create-blog-title"
           className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300 ${
             isDark ? "bg-neutral-950/75" : "bg-amber-950/20"
           }`}
@@ -1425,7 +1472,10 @@ const BlogApp: React.FC = () => {
                   >
                     Editor Workspace
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight">
+                  <h2
+                    id="create-blog-title"
+                    className="mt-2 text-2xl font-semibold tracking-tight"
+                  >
                     Create a new blog
                   </h2>
                   <p
@@ -1459,7 +1509,7 @@ const BlogApp: React.FC = () => {
                         : "border-amber-200 text-stone-600 hover:border-amber-300 hover:bg-amber-100/70 hover:text-stone-900"
                     }`}
                     disabled={isPublishing}
-                    onClick={() => setIsAddModalOpen(false)}
+                    onClick={closeAddModal}
                     aria-label="Close add blog modal"
                   >
                     X
@@ -1613,7 +1663,7 @@ const BlogApp: React.FC = () => {
                         : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
                     }`}
                     disabled={isPublishing}
-                    onClick={() => setIsAddModalOpen(false)}
+                    onClick={closeAddModal}
                   >
                     Cancel
                   </button>
