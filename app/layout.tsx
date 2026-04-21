@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getServerSession } from "next-auth";
 import "./globals.css";
-import { Toaster } from "sonner";
 import { Providers } from "./providers";
-import { Themetoggle } from "@/components/ui/theme-togglr";
+import { Toaster } from "@/components/ui/sonner";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 const geistSans = Geist({
@@ -37,12 +37,13 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers session={session}>{children}</Providers>
-        <div className="fixed bottom-6 right-6 z-40">
-          <Themetoggle />
-        </div>
-
-        <Toaster />
+        <Providers session={session}>
+          {children}
+          <div className="fixed bottom-6 right-6 z-40">
+            <ThemeToggle />
+          </div>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );

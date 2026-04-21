@@ -1,17 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from "react";
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import {
-  BookOpen,
-  User,
-  ArrowLeft,
-  Clock,
-  Calendar,
-  Plus,
-} from "lucide-react";
+import { BookOpen, User, ArrowLeft, Clock, Calendar, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import CustomEditor from "./CustomEditor";
@@ -112,7 +111,8 @@ const getCoverGradient = (
     return COVER_STYLE_GRADIENTS[normalizedToken];
   }
 
-  const index = hashString(seed + normalizedToken) % AUTO_COVER_GRADIENTS.length;
+  const index =
+    hashString(seed + normalizedToken) % AUTO_COVER_GRADIENTS.length;
   return AUTO_COVER_GRADIENTS[index];
 };
 
@@ -161,7 +161,10 @@ const getReadMinutes = (readTimeValue: string): number => {
 };
 
 const estimateReadTime = (content: string): string => {
-  const plainText = content.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  const plainText = content
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!plainText) return "1 min read";
 
   const words = plainText.split(" ").length;
@@ -194,7 +197,9 @@ const GradientCover: React.FC<GradientCoverProps> = ({
     <div
       className={`relative isolate overflow-hidden ${className} bg-gradient-to-br ${coverGradient}`}
     >
-      <div className={`absolute inset-0 ${isDark ? "bg-black/36" : "bg-black/24"}`} />
+      <div
+        className={`absolute inset-0 ${isDark ? "bg-black/36" : "bg-black/24"}`}
+      />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_16%_20%,rgba(255,255,255,0.2),transparent_40%)]" />
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_84%_84%,rgba(0,0,0,0.62),transparent_46%)]" />
       <div className="pointer-events-none absolute inset-0 opacity-20 bg-[linear-gradient(125deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0)_42%,rgba(0,0,0,0.34)_100%)]" />
@@ -560,19 +565,15 @@ const BlogApp: React.FC = () => {
 
     const mineFiltered =
       showOnlyMine && session?.user?.email
-        ? categoryFiltered.filter((post) => post.authorEmail === session.user.email)
+        ? categoryFiltered.filter(
+            (post) => post.authorEmail === session.user.email,
+          )
         : categoryFiltered;
 
     const normalizedQuery = searchQuery.trim().toLowerCase();
     const queryFiltered = normalizedQuery
       ? mineFiltered.filter((post) =>
-          [
-            post.title,
-            post.excerpt,
-            post.author,
-            post.category,
-            post.readTime,
-          ]
+          [post.title, post.excerpt, post.author, post.category, post.readTime]
             .join(" ")
             .toLowerCase()
             .includes(normalizedQuery),
@@ -582,7 +583,9 @@ const BlogApp: React.FC = () => {
     const sorted = [...queryFiltered];
     switch (sortBy) {
       case "oldest":
-        sorted.sort((a, b) => getPostTimestamp(a.date) - getPostTimestamp(b.date));
+        sorted.sort(
+          (a, b) => getPostTimestamp(a.date) - getPostTimestamp(b.date),
+        );
         break;
       case "title-asc":
         sorted.sort((a, b) => a.title.localeCompare(b.title));
@@ -591,14 +594,20 @@ const BlogApp: React.FC = () => {
         sorted.sort((a, b) => b.title.localeCompare(a.title));
         break;
       case "read-short":
-        sorted.sort((a, b) => getReadMinutes(a.readTime) - getReadMinutes(b.readTime));
+        sorted.sort(
+          (a, b) => getReadMinutes(a.readTime) - getReadMinutes(b.readTime),
+        );
         break;
       case "read-long":
-        sorted.sort((a, b) => getReadMinutes(b.readTime) - getReadMinutes(a.readTime));
+        sorted.sort(
+          (a, b) => getReadMinutes(b.readTime) - getReadMinutes(a.readTime),
+        );
         break;
       case "newest":
       default:
-        sorted.sort((a, b) => getPostTimestamp(b.date) - getPostTimestamp(a.date));
+        sorted.sort(
+          (a, b) => getPostTimestamp(b.date) - getPostTimestamp(a.date),
+        );
     }
 
     return sorted;
@@ -629,8 +638,8 @@ const BlogApp: React.FC = () => {
   }, [blogPosts]);
   const canDeleteSelectedPost = Boolean(
     session?.user?.email &&
-      selectedPost?.authorEmail &&
-      selectedPost.authorEmail === session.user.email,
+    selectedPost?.authorEmail &&
+    selectedPost.authorEmail === session.user.email,
   );
   const currentYear = new Date().getFullYear();
   const modalInputClass = `w-full rounded-xl border px-4 py-3 text-sm transition focus:outline-none focus:ring-2 ${
@@ -659,7 +668,12 @@ const BlogApp: React.FC = () => {
     const trimmedCategory = newBlog.category?.trim();
     const trimmedContent = newBlog.content?.trim();
 
-    if (!trimmedTitle || !trimmedExcerpt || !trimmedCategory || !trimmedContent) {
+    if (
+      !trimmedTitle ||
+      !trimmedExcerpt ||
+      !trimmedCategory ||
+      !trimmedContent
+    ) {
       toast.error("Please fill in all required fields.");
       return;
     }
@@ -716,31 +730,34 @@ const BlogApp: React.FC = () => {
   }, [isPublishing, newBlog, session?.user?.name]);
 
   // Delete Blog
-  const handleDeleteBlog = useCallback(async (id?: string) => {
-    if (!id || deletingPostId) return;
-    if (!window.confirm("Delete this blog?")) return;
+  const handleDeleteBlog = useCallback(
+    async (id?: string) => {
+      if (!id || deletingPostId) return;
+      if (!window.confirm("Delete this blog?")) return;
 
-    setDeletingPostId(id);
+      setDeletingPostId(id);
 
-    try {
-      const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
-      const data = await res.json();
+      try {
+        const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+        const data = await res.json();
 
-      if (!res.ok || !data.success) {
-        toast.error(extractErrorMessage(data, "Could not delete blog."));
-        return;
+        if (!res.ok || !data.success) {
+          toast.error(extractErrorMessage(data, "Could not delete blog."));
+          return;
+        }
+
+        setBlogPosts((prev) => prev.filter((p) => p._id !== id));
+        setSelectedPost(null);
+        toast.success("Blog deleted.");
+      } catch (err) {
+        console.error("Delete error:", err);
+        toast.error("Could not delete blog.");
+      } finally {
+        setDeletingPostId(null);
       }
-
-      setBlogPosts((prev) => prev.filter((p) => p._id !== id));
-      setSelectedPost(null);
-      toast.success("Blog deleted.");
-    } catch (err) {
-      console.error("Delete error:", err);
-      toast.error("Could not delete blog.");
-    } finally {
-      setDeletingPostId(null);
-    }
-  }, [deletingPostId]);
+    },
+    [deletingPostId],
+  );
 
   const scrollToArchive = useCallback(() => {
     blogGridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -956,7 +973,9 @@ const BlogApp: React.FC = () => {
                     disabled={deletingPostId === selectedPost._id}
                     className="inline-flex items-center px-4 py-2 rounded-lg bg-red-600 text-white text-sm font-semibold hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
-                    {deletingPostId === selectedPost._id ? "Deleting..." : "Delete post"}
+                    {deletingPostId === selectedPost._id
+                      ? "Deleting..."
+                      : "Delete post"}
                   </button>
                 </div>
               )}
@@ -1213,7 +1232,10 @@ const BlogApp: React.FC = () => {
       )}
 
       {/* Blog Grid */}
-      <section ref={blogGridRef} className="relative z-10 max-w-7xl mx-auto px-4 pb-16">
+      <section
+        ref={blogGridRef}
+        className="relative z-10 max-w-7xl mx-auto px-4 pb-16"
+      >
         <div
           className={`mb-8 space-y-5 rounded-2xl border p-5 md:p-6 backdrop-blur-xl animate-rise-fade-delayed ${
             isDark
@@ -1272,7 +1294,9 @@ const BlogApp: React.FC = () => {
 
               <select
                 value={sortBy}
-                onChange={(event) => setSortBy(event.target.value as BlogSortKey)}
+                onChange={(event) =>
+                  setSortBy(event.target.value as BlogSortKey)
+                }
                 className={filterControlClass}
                 aria-label="Sort posts"
               >
@@ -1403,7 +1427,9 @@ const BlogApp: React.FC = () => {
                   </span>
                   <h2
                     className={`mt-3 text-lg font-semibold leading-snug transition-colors ${
-                      isDark ? "group-hover:text-white" : "group-hover:text-amber-900"
+                      isDark
+                        ? "group-hover:text-white"
+                        : "group-hover:text-amber-900"
                     }`}
                   >
                     {post.title}
@@ -1554,7 +1580,9 @@ const BlogApp: React.FC = () => {
                   <label className={modalLabelClass} htmlFor="blog-image">
                     Cover gradient
                   </label>
-                  <p className={`text-xs ${isDark ? "text-neutral-500" : "text-stone-500"}`}>
+                  <p
+                    className={`text-xs ${isDark ? "text-neutral-500" : "text-stone-500"}`}
+                  >
                     Pick a gradient mood for your post cover.
                   </p>
                   <select
