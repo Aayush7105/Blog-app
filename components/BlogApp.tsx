@@ -170,16 +170,42 @@ const getReadMinutes = (readTimeValue: string): number => {
   return Number.isFinite(minutes) && minutes > 0 ? minutes : 1;
 };
 
-const estimateReadTime = (content: string): string => {
-  const plainText = content
+const getPlainTextContent = (content: string): string => {
+  return content
     .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;|&#160;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'")
     .replace(/\s+/g, " ")
     .trim();
-  if (!plainText) return "1 min read";
+};
 
-  const words = plainText.split(" ").length;
+const getWordCount = (content: string): number => {
+  const plainText = getPlainTextContent(content);
+  return plainText ? plainText.split(/\s+/).length : 0;
+};
+
+const estimateReadTime = (content: string): string => {
+  const words = getWordCount(content);
+  if (!words) return "1 min read";
+
   const minutes = Math.max(1, Math.ceil(words / 220));
   return `${minutes} min read`;
+};
+
+const formatFieldList = (fields: string[]): string => {
+  if (fields.length <= 1) {
+    return fields[0] || "";
+  }
+
+  if (fields.length === 2) {
+    return `${fields[0]} and ${fields[1]}`;
+  }
+
+  return `${fields.slice(0, -1).join(", ")}, and ${fields[fields.length - 1]}`;
 };
 
 interface GradientCoverProps {
@@ -264,6 +290,7 @@ const BlogApp: React.FC = () => {
   const blogGridRef = useRef<HTMLElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const titleInputRef = useRef<HTMLInputElement | null>(null);
+  const addModalPanelRef = useRef<HTMLDivElement | null>(null);
   const hasRestoredArchiveFilters = useRef(false);
 
   useEffect(() => {
@@ -459,16 +486,49 @@ const BlogApp: React.FC = () => {
       return;
     }
 
-    const handleModalEscape = (event: KeyboardEvent) => {
+    const handleModalKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
         closeAddModal();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const focusableElements =
+        addModalPanelRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        );
+
+      const visibleFocusableElements = Array.from(
+        focusableElements || [],
+      ).filter((element) => element.getClientRects().length > 0);
+
+      if (!visibleFocusableElements.length) {
+        return;
+      }
+
+      const firstFocusable = visibleFocusableElements[0];
+      const lastFocusable =
+        visibleFocusableElements[visibleFocusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable.focus();
+        return;
+      }
+
+      if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable.focus();
       }
     };
 
-    document.addEventListener("keydown", handleModalEscape);
+    document.addEventListener("keydown", handleModalKeyDown);
     return () => {
-      document.removeEventListener("keydown", handleModalEscape);
+      document.removeEventListener("keydown", handleModalKeyDown);
     };
   }, [closeAddModal, isAddModalOpen]);
 
@@ -581,6 +641,10 @@ const BlogApp: React.FC = () => {
     () => estimateReadTime(newBlog.content || ""),
     [newBlog.content],
   );
+  const draftWordCount = useMemo(
+    () => getWordCount(newBlog.content || ""),
+    [newBlog.content],
+  );
 
   const visiblePosts = useMemo(() => {
     const categoryFiltered =
@@ -651,6 +715,18 @@ const BlogApp: React.FC = () => {
     sortBy !== "newest" ||
     showOnlyMine;
   const hasDraftContent = hasBlogDraftContent(newBlog);
+  const missingRequiredFields = useMemo(() => {
+    const missingFields: string[] = [];
+
+    if (!newBlog.title?.trim()) missingFields.push("title");
+    if (!newBlog.excerpt?.trim()) missingFields.push("excerpt");
+    if (!newBlog.category?.trim()) missingFields.push("category");
+    if (!getPlainTextContent(newBlog.content || "")) {
+      missingFields.push("content");
+    }
+
+    return missingFields;
+  }, [newBlog.category, newBlog.content, newBlog.excerpt, newBlog.title]);
 
   const featuredPost = useMemo(() => {
     if (!blogPosts.length) {
@@ -688,20 +764,17 @@ const BlogApp: React.FC = () => {
   const handleAddBlog = useCallback(async () => {
     if (isPublishing) return;
 
-    const trimmedTitle = newBlog.title?.trim();
-    const trimmedExcerpt = newBlog.excerpt?.trim();
-    const trimmedCategory = newBlog.category?.trim();
-    const trimmedContent = newBlog.content?.trim();
-
-    if (
-      !trimmedTitle ||
-      !trimmedExcerpt ||
-      !trimmedCategory ||
-      !trimmedContent
-    ) {
-      toast.error("Please fill in all required fields.");
+    if (missingRequiredFields.length > 0) {
+      toast.error(
+        `Please add ${formatFieldList(missingRequiredFields)} before publishing.`,
+      );
       return;
     }
+
+    const trimmedTitle = newBlog.title?.trim() || "";
+    const trimmedExcerpt = newBlog.excerpt?.trim() || "";
+    const trimmedCategory = newBlog.category?.trim() || "";
+    const trimmedContent = newBlog.content?.trim() || "";
 
     const blogData = {
       ...newBlog,
@@ -752,18 +825,26 @@ const BlogApp: React.FC = () => {
     } finally {
       setIsPublishing(false);
     }
-  }, [isPublishing, newBlog, session?.user?.name]);
+  }, [isPublishing, missingRequiredFields, newBlog, session?.user?.name]);
 
   // Delete Blog
   const handleDeleteBlog = useCallback(
     async (id?: string) => {
       if (!id || deletingPostId) return;
-      if (!window.confirm("Delete this blog?")) return;
+      const postToDelete = blogPosts.find((post) => post._id === id);
+      const confirmationLabel = postToDelete?.title
+        ? `"${postToDelete.title}"`
+        : "this blog";
+
+      if (!window.confirm(`Delete ${confirmationLabel}?`)) return;
 
       setDeletingPostId(id);
 
       try {
-        const res = await fetch(`/api/blogs/${id}`, { method: "DELETE" });
+        const res = await fetch(`/api/blogs/${id}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
         const data = await res.json();
 
         if (!res.ok || !data.success) {
@@ -781,7 +862,7 @@ const BlogApp: React.FC = () => {
         setDeletingPostId(null);
       }
     },
-    [deletingPostId],
+    [blogPosts, deletingPostId],
   );
 
   const scrollToArchive = useCallback(() => {
@@ -837,6 +918,26 @@ const BlogApp: React.FC = () => {
       document.removeEventListener("keydown", handleArchiveShortcuts);
     };
   }, [isAddModalOpen, searchQuery, selectedPost]);
+
+  useEffect(() => {
+    if (!selectedPost || isAddModalOpen) {
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+    const handlePostEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedPost(null);
+      }
+    };
+
+    document.addEventListener("keydown", handlePostEscape);
+    return () => {
+      document.removeEventListener("keydown", handlePostEscape);
+    };
+  }, [isAddModalOpen, selectedPost]);
 
   const handlePostCardKeyDown = useCallback(
     (event: React.KeyboardEvent<HTMLElement>, post: BlogPost) => {
@@ -1574,6 +1675,7 @@ const BlogApp: React.FC = () => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="create-blog-title"
+          aria-describedby="create-blog-description"
           className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-md animate-in fade-in duration-300 ${
             isDark ? "bg-neutral-950/75" : "bg-amber-950/20"
           }`}
@@ -1586,6 +1688,7 @@ const BlogApp: React.FC = () => {
             }`}
           >
             <div
+              ref={addModalPanelRef}
               className={`max-h-[90vh] overflow-y-auto rounded-3xl border p-6 md:p-7 ${
                 isDark
                   ? "border-neutral-700 bg-neutral-900/95 text-neutral-100"
@@ -1608,6 +1711,7 @@ const BlogApp: React.FC = () => {
                     Create a new blog
                   </h2>
                   <p
+                    id="create-blog-description"
                     className={`mt-1 text-sm ${
                       isDark ? "text-neutral-400" : "text-stone-600"
                     }`}
