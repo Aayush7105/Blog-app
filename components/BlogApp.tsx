@@ -1515,9 +1515,13 @@ const BlogApp: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
+        <div
+          aria-busy={loading}
+          className="grid gap-7 md:grid-cols-2 lg:grid-cols-3 xl:gap-8"
+        >
           {loading ? (
             <div
+              role="status"
               className={`col-span-full flex min-h-[220px] flex-col items-center justify-center rounded-2xl border px-6 py-10 text-center ${
                 isDark
                   ? "border-neutral-700/80 bg-neutral-900/50 text-neutral-300"
@@ -1530,6 +1534,7 @@ const BlogApp: React.FC = () => {
             </div>
           ) : visiblePosts.length === 0 ? (
             <div
+              aria-live="polite"
               className={`col-span-full flex min-h-[260px] flex-col items-center justify-center rounded-2xl border px-6 py-10 text-center ${
                 isDark
                   ? "border-neutral-700/80 bg-neutral-900/50 text-neutral-300"
@@ -1862,33 +1867,45 @@ const BlogApp: React.FC = () => {
                       onChange={handleEditorChange}
                     />
                   </div>
-                  <p
-                    className={`mt-3 text-xs ${
+                  <div
+                    className={`mt-3 flex flex-wrap items-center justify-between gap-2 text-xs ${
                       isDark ? "text-neutral-400" : "text-stone-600"
                     }`}
                   >
-                    Estimated read time: {estimatedReadTime}
-                  </p>
+                    <span>Estimated read time: {estimatedReadTime}</span>
+                    <span>{draftWordCount} words</span>
+                  </div>
                 </div>
               </div>
 
               <div className="mt-7 flex flex-wrap items-center justify-between gap-3">
-                {hasDraftContent ? (
-                  <button
-                    type="button"
-                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
-                      isDark
-                        ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
-                        : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
-                    }`}
-                    disabled={isPublishing}
-                    onClick={handleClearDraft}
-                  >
-                    Start fresh
-                  </button>
-                ) : (
-                  <span />
-                )}
+                <div>
+                  {hasDraftContent ? (
+                    <button
+                      type="button"
+                      className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                        isDark
+                          ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                          : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
+                      }`}
+                      disabled={isPublishing}
+                      onClick={handleClearDraft}
+                    >
+                      Start fresh
+                    </button>
+                  ) : (
+                    <span />
+                  )}
+                  {missingRequiredFields.length > 0 && (
+                    <p
+                      className={`mt-2 text-xs ${
+                        isDark ? "text-neutral-400" : "text-stone-600"
+                      }`}
+                    >
+                      Still needed: {formatFieldList(missingRequiredFields)}.
+                    </p>
+                  )}
+                </div>
 
                 <div className="flex items-center gap-3">
                   <button
