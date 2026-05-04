@@ -10,7 +10,17 @@ import React, {
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { Plus_Jakarta_Sans } from "next/font/google";
-import { BookOpen, User, ArrowLeft, Clock, Calendar, Plus } from "lucide-react";
+import {
+  BookOpen,
+  User,
+  ArrowLeft,
+  Clock,
+  Calendar,
+  Plus,
+  Search,
+  X,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { signIn, signOut, useSession } from "next-auth/react";
 import CustomEditor from "./CustomEditor";
@@ -253,6 +263,7 @@ const BlogApp: React.FC = () => {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const blogGridRef = useRef<HTMLElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const titleInputRef = useRef<HTMLInputElement | null>(null);
   const hasRestoredArchiveFilters = useRef(false);
 
   useEffect(() => {
@@ -460,6 +471,20 @@ const BlogApp: React.FC = () => {
       document.removeEventListener("keydown", handleModalEscape);
     };
   }, [closeAddModal, isAddModalOpen]);
+
+  useEffect(() => {
+    if (!isAddModalOpen) {
+      return;
+    }
+
+    const focusTimer = window.setTimeout(() => {
+      titleInputRef.current?.focus();
+    }, 80);
+
+    return () => {
+      window.clearTimeout(focusTimer);
+    };
+  }, [isAddModalOpen]);
 
   useEffect(() => {
     if (!isAddModalOpen) {
@@ -1107,6 +1132,7 @@ const BlogApp: React.FC = () => {
                   </div>
                 ) : (
                   <button
+                    type="button"
                     onClick={() => signOut()}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300 ${
                       isDark
@@ -1121,6 +1147,7 @@ const BlogApp: React.FC = () => {
             ) : (
               <>
                 <button
+                  type="button"
                   onClick={() => signIn("google")}
                   className={`rounded-xl px-4 py-2 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
                 >
@@ -1267,27 +1294,33 @@ const BlogApp: React.FC = () => {
 
             <div className="grid w-full gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-[minmax(240px,1fr)_190px_auto]">
               <div className="relative">
+                <Search
+                  aria-hidden="true"
+                  className={`pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+                    isDark ? "text-neutral-500" : "text-stone-400"
+                  }`}
+                />
                 <input
                   ref={searchInputRef}
                   type="text"
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
                   placeholder="Search title, excerpt, author..."
-                  className={`${filterControlClass} pr-16`}
+                  className={`${filterControlClass} pl-10 pr-11`}
                   aria-label="Search posts"
                 />
                 {searchQuery.trim().length > 0 && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery("")}
-                    className={`absolute right-2 top-1/2 -translate-y-1/2 rounded-lg px-2 py-1 text-xs font-semibold transition-all duration-300 ${
+                    className={`absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg transition-all duration-300 ${
                       isDark
                         ? "text-neutral-300 hover:bg-neutral-800 hover:text-white"
                         : "text-stone-600 hover:bg-amber-100 hover:text-stone-900"
                     }`}
                     aria-label="Clear search"
                   >
-                    Clear
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 )}
               </div>
@@ -1383,13 +1416,83 @@ const BlogApp: React.FC = () => {
 
         <div className="grid gap-7 md:grid-cols-2 lg:grid-cols-3 xl:gap-8">
           {loading ? (
-            <p className={isDark ? "text-neutral-300" : "text-stone-500"}>
-              Loading...
-            </p>
+            <div
+              className={`col-span-full flex min-h-[220px] flex-col items-center justify-center rounded-2xl border px-6 py-10 text-center ${
+                isDark
+                  ? "border-neutral-700/80 bg-neutral-900/50 text-neutral-300"
+                  : "border-amber-100/90 bg-white/70 text-stone-600"
+              }`}
+            >
+              <Loader2 className="h-7 w-7 animate-spin" aria-hidden="true" />
+              <p className="mt-4 text-sm font-semibold">Loading posts</p>
+              <p className="mt-1 text-sm">Getting the newest stories ready.</p>
+            </div>
           ) : visiblePosts.length === 0 ? (
-            <p className={isDark ? "text-neutral-300" : "text-stone-500"}>
-              No posts match your current filters.
-            </p>
+            <div
+              className={`col-span-full flex min-h-[260px] flex-col items-center justify-center rounded-2xl border px-6 py-10 text-center ${
+                isDark
+                  ? "border-neutral-700/80 bg-neutral-900/50 text-neutral-300"
+                  : "border-amber-100/90 bg-white/70 text-stone-600"
+              }`}
+            >
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-xl ${
+                  isDark
+                    ? "bg-neutral-800 text-neutral-200"
+                    : "bg-amber-100 text-amber-900"
+                }`}
+              >
+                <BookOpen className="h-6 w-6" aria-hidden="true" />
+              </div>
+              <h3
+                className={`mt-4 text-lg font-semibold ${
+                  isDark ? "text-white" : "text-stone-900"
+                }`}
+              >
+                No posts found
+              </h3>
+              <p className="mt-2 max-w-md text-sm">
+                {hasActiveArchiveFilters
+                  ? "Try clearing the filters or searching for a different topic."
+                  : "Publish the first story to start building the archive."}
+              </p>
+              <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+                {hasActiveArchiveFilters && (
+                  <button
+                    type="button"
+                    onClick={clearArchiveFilters}
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition-all duration-300 ${
+                      isDark
+                        ? "border-neutral-700 text-neutral-300 hover:bg-neutral-800 hover:text-white"
+                        : "border-amber-200 text-stone-700 hover:bg-amber-100/70 hover:text-stone-900"
+                    }`}
+                  >
+                    Clear filters
+                  </button>
+                )}
+                {session?.user ? (
+                  <button
+                    type="button"
+                    onClick={handleOpenAddModal}
+                    disabled={isPublishing}
+                    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${primaryButtonClass}`}
+                  >
+                    <Plus className="h-4 w-4" aria-hidden="true" />
+                    Add Blog
+                  </button>
+                ) : (
+                  !hasActiveArchiveFilters && (
+                    <button
+                      type="button"
+                      onClick={() => signIn("google")}
+                      className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-300 ${primaryButtonClass}`}
+                    >
+                      Sign in to write
+                    </button>
+                  )
+                )}
+              </div>
+            </div>
           ) : (
             visiblePosts.map((post, index) => (
               <article
@@ -1529,7 +1632,7 @@ const BlogApp: React.FC = () => {
                   )}
                   <button
                     type="button"
-                    className={`h-9 w-9 rounded-full border text-sm font-semibold transition-all duration-300 ${
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border text-sm font-semibold transition-all duration-300 ${
                       isDark
                         ? "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:bg-neutral-800 hover:text-white"
                         : "border-amber-200 text-stone-600 hover:border-amber-300 hover:bg-amber-100/70 hover:text-stone-900"
@@ -1538,7 +1641,7 @@ const BlogApp: React.FC = () => {
                     onClick={closeAddModal}
                     aria-label="Close add blog modal"
                   >
-                    X
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 </div>
               </div>
@@ -1549,6 +1652,7 @@ const BlogApp: React.FC = () => {
                     Title *
                   </label>
                   <input
+                    ref={titleInputRef}
                     id="blog-title"
                     type="text"
                     placeholder="A concise title your readers will remember"
@@ -1697,10 +1801,16 @@ const BlogApp: React.FC = () => {
                   </button>
                   <button
                     type="button"
-                    className={`rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
+                    className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-sm font-semibold shadow-sm transition-all duration-300 ${primaryButtonClass}`}
                     disabled={isPublishing}
                     onClick={handleAddBlog}
                   >
+                    {isPublishing && (
+                      <Loader2
+                        className="h-4 w-4 animate-spin"
+                        aria-hidden="true"
+                      />
+                    )}
                     {isPublishing ? "Publishing..." : "Publish Blog"}
                   </button>
                 </div>
