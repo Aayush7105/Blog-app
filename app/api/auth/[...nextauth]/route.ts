@@ -2,7 +2,6 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
-import Blog from "@/models/Blog";
 
 // Extend NextAuth types
 declare module "next-auth" {

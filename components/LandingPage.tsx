@@ -25,47 +25,10 @@ export default function LandingPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement | null>(null);
-  const [userPosts, setUserPosts] = useState<
-    {
-      _id: string;
-      title: string;
-      excerpt: string;
-      date: string;
-      category: string;
-      image: string;
-      readTime: string;
-    }[]
-  >([]);
-  const [userPostsLoading, setUserPostsLoading] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    const loadUserPosts = async () => {
-      if (!session?.user?.email) {
-        setUserPosts([]);
-        return;
-      }
-      try {
-        setUserPostsLoading(true);
-        const res = await fetch(
-          `/api/blogs/author/${encodeURIComponent(session.user.email)}`,
-        );
-        const data = await res.json();
-        if (data.success) {
-          setUserPosts(data.posts);
-        }
-      } catch (err) {
-        console.error("Error loading user posts:", err);
-      } finally {
-        setUserPostsLoading(false);
-      }
-    };
-
-    loadUserPosts();
-  }, [session?.user?.email]);
 
   useEffect(() => {
     const loadProfileImage = async () => {
@@ -304,7 +267,7 @@ export default function LandingPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div
-                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-tranneutral-y-1 ${
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
                     isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
@@ -314,7 +277,7 @@ export default function LandingPage() {
                   <p className="text-2xl font-bold">1.2k+</p>
                 </div>
                 <div
-                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-tranneutral-y-1 ${
+                  className={`rounded-xl p-4 border transition-all duration-300 hover:shadow-md hover:shadow-accent/10 hover:-translate-y-1 ${
                     isDark ? "bg-card border-border" : "bg-card border-border"
                   }`}
                 >
@@ -364,7 +327,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={idx}
-                  className={`p-8 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-tranneutral-y-1 group cursor-pointer ${
+                  className={`p-8 rounded-xl border transition-all duration-300 hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group cursor-pointer ${
                     isDark
                       ? "bg-card border-border hover:border-accent/50"
                       : "bg-card border-border hover:border-accent/50"
@@ -391,10 +354,10 @@ export default function LandingPage() {
         </h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
           {["Development", "Design", "Technology", "Tutorial"].map(
-            (category, idx) => (
+            (category) => (
               <div
                 key={category}
-                className={`p-6 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-accent/10 hover:-tranneutral-y-1 group ${
+                className={`p-6 rounded-xl border transition-all duration-300 cursor-pointer hover:shadow-lg hover:shadow-accent/10 hover:-translate-y-1 group ${
                   isDark
                     ? "bg-card border-border hover:border-accent/50"
                     : "bg-card border-border hover:border-accent/50"

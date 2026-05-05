@@ -242,7 +242,7 @@ export default function ProfilePage({ email }: { email: string }) {
               posts.map((post) => (
                 <article
                   key={post._id}
-                  className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 border border-border bg-card hover:-tranneutral-y-1"
+                  className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition duration-300 border border-border bg-card hover:-translate-y-1"
                 >
                   <div className="relative aspect-[16/10] bg-secondary">
                     {post.image ? (
