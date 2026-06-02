@@ -5,10 +5,9 @@ import { useTheme } from "next-themes";
 import { Toaster as Sonner } from "sonner";
 
 type ToasterProps = ComponentProps<typeof Sonner>;
+type ToastOptions = NonNullable<ToasterProps["toastOptions"]>;
 
-const defaultToastClassNames: NonNullable<
-  ToasterProps["toastOptions"]
->["classNames"] = {
+const defaultToastClassNames: ToastOptions["classNames"] = {
   toast:
     "group toast group-[.toaster]:rounded-xl group-[.toaster]:border group-[.toaster]:border-border group-[.toaster]:bg-card/95 group-[.toaster]:p-4 group-[.toaster]:text-foreground group-[.toaster]:backdrop-blur-xl group-[.toaster]:shadow-[0_18px_36px_rgba(30,41,59,0.14)] dark:group-[.toaster]:shadow-[0_16px_36px_rgba(0,0,0,0.4)]",
   title: "group-[.toast]:font-semibold",
@@ -22,6 +21,11 @@ const defaultToastClassNames: NonNullable<
     "group-[.toast]:border-border group-[.toast]:bg-background group-[.toast]:text-muted-foreground group-[.toast]:transition-colors group-[.toast]:hover:text-foreground",
 };
 
+const defaultToastOptions: ToastOptions = {
+  closeButtonAriaLabel: "Dismiss notification",
+  classNames: defaultToastClassNames,
+};
+
 const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme();
   const { classNames, ...toastOptionOverrides } = toastOptions ?? {};
@@ -33,9 +37,14 @@ const Toaster = ({ toastOptions, ...props }: ToasterProps) => {
       className="toaster group"
       closeButton
       richColors
+      gap={10}
       duration={4200}
       visibleToasts={4}
+      offset={24}
+      mobileOffset={16}
+      containerAriaLabel="Notifications"
       toastOptions={{
+        ...defaultToastOptions,
         ...toastOptionOverrides,
         classNames: {
           ...defaultToastClassNames,
